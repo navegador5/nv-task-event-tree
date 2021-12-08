@@ -1,0 +1,19 @@
+{
+  "name": "nv-task-event-tree",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nv-data-tree-csp-jconvert": "^1.0.4",
+    "nv-data-tree-csp-node": "^1.0.17",
+    "nv-facutil-basic": "^1.0.91"
+  },
+  "devDependencies": {
+    "nv-random-promise": "^0.0.2"
+  }
+}
