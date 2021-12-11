@@ -1,51 +1,197 @@
-const _SN = {'ready':1,'pending':2,'resolved':3,'rejected':4,'paused':5}
-const _NS = {1:'ready',2:'pending',3:'resolved',4:'rejected',5:'paused'}
+const {_Node} = require("nv-data-tree-csp-node");
 
-const sym_curr = Symbol()
+const ODP = Object.defineProperty;
 
-class State {
+const {
+    sym_state,
+    sym_state_rdy,
+    sym_state_conding,
+    sym_state_open,
+    sym_state_exec,
+    sym_state_rs,
+    sym_state_srj,
+    sym_state_brj,
+    sym_state_spause,
+    sym_state_bpause,
+    sym_state_im,
+} = require("./const");
+
+const _SN = {
+    "ready": 0,
+    "conding": 1,
+    "opened": 2,
+    "self_executing": 3,
+    "resolved": 4,
+    "self_rejected": 5,
+    "bubble_rejected": 6,
+    "self_paused": 7,
+    "bubble_paused": 8,
+    "impossible": 9
+}
+
+const _NS = {
+    "0": "ready",                 //default
+    "1": "conding",               //异步条件回调: async conder 用来实现 IF 控制流
+    "2": "opened",                //start DFS(Serial)/WFS(Paralle) descendant
+    "3": "self_executing",        //exec-self-executor : closing stage  
+    "4": "resolved",              //
+    "5": "self_rejected",         //self-executor rejected 
+    "6": "bubble_rejected",       //received upward propagating reject msg
+    "7": "self_paused",           //self-executor paused          need respawn
+    "8": "bubble_paused",         //received upward propagating pause msg
+    "9": "impossible"             //conder FAIL ,will set all descendants to impossible
+}
+
+const _MAIN_TAC = [
+    "ready",
+    "started",[
+        "conding",
+        "pending",[
+            "opened",
+            "self_executing"
+        ]
+    ],
+    "stopped",[
+        "settled",[
+            "resolved",
+            "rejected",[
+                 "self_rejected",
+                 "bubble_rejected"
+            ],
+        ],
+        "paused",[
+            "self_paused",
+            "bubble_paused"
+        ],
+        "impossible"
+    ]
+]
+
+
+const _STUCK_TAC = [
+    "ready",
+    "started",[
+        "conding",
+        "pending",[
+            "opened",
+            "self_executing"
+        ]
+    ],
+    "resolved",
+    "stucked",[
+        "rejected",[
+             "self_rejected",
+             "bubble_rejected"
+        ],
+        "paused",[
+            "self_paused",
+            "bubble_paused"
+        ],
+    ],
+    "impossible"
+]
+
+
+function _get_fst_ance(that,method) {
+     let g = that.$gen_ance();
+     for(let an of g) {
+         if(an[method]()) {
+             return(an)
+         } else {}
+     }
+     return(null)
+}
+
+function _get_xxx_deses(that,method) {
+     let sdfs = that.$sdfs_;
+     return(sdfs.filter(r=>r[method]()))
+}
+
+
+
+class State extends _Node {
      #curr = 1 
-     get [Symbol.toStringTag]() {return(_NS[this.#curr])}
+     get state_()               {return(_NS[this.#curr])}
      ////
-     get [sym_curr]()   {return(this.#curr)}
-     set [sym_curr](v)  {return(this.#curr=v)}
+     get [sym_state]()  {return(this.#curr)}
      ////
-     is_settled() {return(this.#curr === _SN.resolved || this.#curr === _SN.rejected)}
-     is_stucked() {return(this.#curr === _SN.paused || this.#curr === _SN.rejected)}
-     is_stopped() {return(this.is_settled() ||this.is_stucked())}
+     is_pending() {return(this.#curr >=2 && this.#curr <=3)}
+     is_started() {return(this.#curr >=1 && this.#curr <=3)}
      ////
-     can_start()    {return(this.#curr===_SN.ready)}
+     is_rejected() {return(this.#curr >=5 && this.#curr <=6)}
+     is_settled()  {return(this.#curr >=4 && this.#curr <=6)}
+     is_paused()   {return(this.#curr >=7 && this.#curr <=8)}
+     is_stucked()  {return(this.#curr >=5 && this.#curr <=8)}
+     is_stopped()  {return(this.#curr >=4 && this.#curr <=9)}
      ////
-     can_resolve()  {return(this.#curr === _SN.pending)}
-     can_reject()  {return(this.#curr === _SN.pending)}
-     can_settle()   {return(this.#curr === _SN.pending)}
-     can_pause()    {return(this.#curr === _SN.pending)}
+     [sym_state_rdy]()                 {this.#curr = 0}
+     [sym_state_conding]()             {this.#curr = 1}      //其返回结果控制 des + self-exec 能否执行
+                                                       //不能的话设为impossible
+     [sym_state_open]()                {this.#curr = 2}      //开始执行des
+     [sym_state_exec]()                {this.#curr = 3}      //开始执行自己
+     [sym_state_rs]()                  {this.#curr = 4}
+     [sym_state_srj]()                 {this.#curr = 5}
+     [sym_state_brj]()                 {this.#curr = 6}
+     [sym_state_spause]()              {this.#curr = 7} 
+     [sym_state_bpause]()              {this.#curr = 8}
+     [sym_state_im]()                  {this.#curr = 9}
      ////
-     can_continue() {return(this.#curr === _SN.paused)}
-     can_recover()  {return(this.#curr === _SN.rejected)}
-     can_carryon()  {return(this.#curr === _SN.paused || this.#curr === _SN.rejected)}
-     ////
-     can_soft_reset()               {return(this.is_settled() || this.#curr === _SN.ready)} 
-     need_reready_for_soft_reset()  {return(this.is_settled())}   //_SN.ready 不需要做任何事情
-     ////
-     need_respawn_for_hard_reset()  {return(this.#curr === _SN.pending || this.#curr === _SN.paused)}
-     ////
-     _rerdy()      {this.#curr = _SN.ready}
-     _start()      {this.#curr = _SN.pending}
-     _resolve()    {this.#curr = _SN.resolved}
-     _reject()     {this.#curr = _SN.rejected}
-     _respawn()    {this.#curr = _SN.ready}     //respawn-a-node
-     _pause()      {this.#curr = _SN.paused}    //respawn-a-node AND THEN #curr = _SN.paused
-     _continue()   {this.#curr = _SN.pending}   //start-paused-node(exec) AND THEN #curr = _SN.pending
-     _soft_reset() {this.#curr = _SN.ready}     //reset rslt/exception   AND THEN #curr = _SN.ready  
-     _recover()    {this.#curr = _SN.pending}   //soft-reset-a-node AND then exec AND THEN #curr = _SN.pending
-     _carryon()    {this.#curr = _SN.pending}   // _continue OR _recover
-     _hard_reset() {this.#curr = _SN.ready}
 }
 
-
-for(let k in _SN) {
-    State.prototype[`is_${k}`]  = function() {return(this[sym_curr] === _SN[k])}
+function _add_is() {
+    for(let k in _SN) {
+        State.prototype[`is_${k}`]  = function() {return(this[sym_state] === _SN[k])}
+    }
 }
 
-module.exports = ()=>(new State());
+_add_is();
+
+const FST_ANCE_METHODS = [
+    'self_rejected',
+    'bubble_rejected',
+    'rejected',
+    'self_paused',
+    'bubble_paused',
+    'paused'
+]
+
+function _add_fst_ance_() {
+    for(let k of FST_ANCE_METHODS) {
+        ODP(
+            State.prototype,
+            `fst_${k}_ance_`,
+            {get:function(){return(_get_fst_ance(this,k))}}
+        );
+        State.prototype[`has_${k}_ance_`] = function() {
+            return(_get_fst_ance(this,k)!==null)
+        }
+    }
+}
+
+_add_fst_ance_();
+
+const DESES_METHODS = [
+    'paused','rejected','stucked'
+]
+
+function _add_xxx_deses_() {
+        ODP(
+            State.prototype,
+            `conding_deses_`,
+            {get:function(){return(_get_xxx_deses(this,`is_conding`))}}
+        );
+        ODP(
+            State.prototype,
+            `self_executing_deses_`,
+            {get:function(){return(_get_xxx_deses(this,`is_self_executing`))}}
+        );
+        ODP(
+            State.prototype,
+            `self_rejected_deses_`,
+            {get:function(){return(_get_xxx_deses(this,`is_self_rejected`))}}
+        );
+}
+
+_add_xxx_deses_();
+
+module.exports = State;
