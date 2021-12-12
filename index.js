@@ -1,10 +1,12 @@
-const load_from_json = require("./task");
 const consts = require("./const");
 const ctrl   = require("./ctrl");
+const {
+    DFLT_CFG
+    load_from_json,
+} = require("./parser");
 const wrap   = require("./wrap");
 
 globalThis[consts.sym_debug] = false;
-
 
 module.exports = {
     ////
@@ -12,6 +14,7 @@ module.exports = {
     ////
     noexist:consts.noexist,
     TYPES:consts.TYPES,
+    DFLT_CFG,
     ////
     IF:ctrl.IF,
     ELIF:ctrl.ELIF,
@@ -19,5 +22,6 @@ module.exports = {
     WHILE:ctrl.WHILE,
     ////
     load_from_json,
+    ////
     wrap,
 }

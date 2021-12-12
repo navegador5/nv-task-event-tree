@@ -104,7 +104,7 @@ function _delete_from_running(that) {
 
 function _cycle(that) {
     let sdfs= that.$sdfs_;
-    sdfs.forEach(nd=>nd[sym_reset](true)}
+    sdfs.forEach(nd=>nd[sym_reset](true));
     that[sym_exec_conder]();
 }
 

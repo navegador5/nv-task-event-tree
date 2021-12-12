@@ -55,7 +55,190 @@ const DEBUG = require("./debug");
 
 const Exec = require("./exec");
 
-class Task extends Exec {
-
+function _reset(that) {
+     if(that.is_ready()) {
+     } else if(that.is_settled()) {
+          that[sym_rerdy](true)
+     } else if(that.is_impossible()){
+          that[sym_state_rdy]();
+     } else if(that.is_paused()) {
+          that[sym_state_rdy]();
+     } {
+          that[sym_reset]();
+     }
 }
+
+
+
+class Task extends Exec {
+    #name
+    #type = TYPES.serial
+    #stuck_origin = noexist
+    #running = new Set()
+    ////
+    get name_()     {return(this.#name??this.$id_)}
+    set name_(name) {this.#name = name}
+    get [Symbol.toStringTag]() {return(this.#name+' : '+this[sym_state])}
+    ////
+    set_as_serial()    {this.#type = TYPES.serial}
+    set_as_parallel()  {this.#type = TYPES.parallel}
+    is_serial()        {return(this.#type === TYPES.serial)}
+    is_parallel()      {return(this.#type === TYPES.parallel)}
+    ////
+    get [sym_stuck_origin]() {return(this.#stuck_origin)}
+    set [sym_stuck_origin](nd)  {this.#stuck_origin = nd}
+    get stucked_at_()  {
+         let rt = this.$root_;
+         return(rt[sym_stuck_origin])
+    }
+    ////
+    get running_() {
+        let rt = this.$root_;
+        return(rt.running_)
+    }
+    ////
+    get_des_with_name(name) {
+        let sdfs = this.$sdfs_;
+        sdfs = sdfs.filter(nd=>nd.name_ === name);
+        if(sdfs.length === 0) {
+            return(null)
+        } else if(sdfs.length === 1) {
+            return(sdfs[0])
+        } else {
+            return(sdfs)
+        }
+    }
+    ////
+    launch() {
+        if(this.$is_root()) {
+            if(this.is_ready()) {
+                DEBUG(globalThis[sym_debug])('root',this,'nest started...')
+                this[sym_exec_conder]();
+                return(this.p_)
+            } else {
+                DEBUG(globalThis[sym_debug])(ERRORS.can_only_start_when_ready)
+            }
+        } else {
+            DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+        }
+    }
+    carryon() {
+        if(this.$is_root()) {
+            if(this.is_paused()) {
+                return(this.continue());
+            } else if(this.is_rejected()) {
+                return(this.recover());
+            } else {
+                DEBUG(globalThis[sym_debug])(ERRORS.state_not_supported)
+            }
+        } else {
+            DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+        }
+    }
+    recover() {
+       if(this.$is_root()) {
+            let curr = this.stucked_at_;
+            let cond = curr.is_self_rejected();
+            if(cond) {
+                ////
+                let ances = curr.$ances_;
+                ances.forEach(ance=>ance[sym_state_rdy]());
+                curr[sym_rdy](false);
+                curr[sym_exec]();
+                return(curr)
+            } else {
+                DEBUG(globalThis[sym_debug])(ERRORS.can_only_recover_when_rejected);
+            }
+       } else {
+           DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+       }
+    }
+    pause() {
+       if(this.$is_root()) {
+            let old_running = Array.from(this.running_);
+            let cond = this.is_pending();
+            if(cond) {
+                old_running.forEach(nd=>nd[sym_spause]());
+                return(old_running)
+            } else {
+                DEBUG(globalThis[sym_debug])(ERRORS.can_only_pause_when_pending);
+            }
+       } else {
+           DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+       }
+    }
+    continue() {
+       if(this.$is_root()) {
+            let old_paused = this.running_;
+            let cond = this.is_paused();
+            if(cond) {
+                let ances = curr.$ances_;
+                ances.forEach(ance=>ance[sym_rdy]());
+                old_paused.forEach(nd=>{
+                    nd[sym_rdy](false);
+                    nd[sym_exec]();
+                });
+                return(old_paused)
+            } else {
+                DEBUG(globalThis[sym_debug])(ERRORS.can_only_continue_when_paused);
+            }
+       } else {
+           DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+       }
+    }
+    /////---------------
+    soft_reset() {
+       if(this.$is_root()) {
+           if(this.is_settled() || this.is_impossible()) {
+               let sdfs = this.$sdfs_;
+               sdfs.forEach(nd=>{_reset(nd)});
+               this[sym_stuck_origin] = noexist;
+               this.running_.clear();
+               return(this)
+           } else {
+               DEBUG(globalThis[sym_debug])(ERRORS.can_soft_reset_only_when_settled_or_impossible)
+           }
+       } else {
+           DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+       }
+    }
+    hard_reset() {
+       if(this.$is_root()) {
+            let self = this;
+            if(this.is_ready()) {
+            } else if(this.is_settled() || this.is_impossible()) {
+                this.soft_reset();
+            } else {
+                let edfs = this.$edfs_;
+                for(let i=0;i<edfs.length-1;i++) {
+                    let nd = efds[i];
+                    _reset(nd)
+                }
+                self = edfs[edfs.length-1];
+                _reset(self)
+            }
+            self[sym_stuck_origin] = noexist;
+            self.running_.clear();
+            return(self)
+       } else {
+           DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
+           return(noexist)
+       }
+    }
+    ////
+}
+
+const {
+    show,
+    dump
+} = require("./repr");
+
+Task.prototype.show = function(rtrn=false) {
+    return(show(this,rtrn))
+}
+Task.prototype.dump = function() {
+    return(dump(this))
+}
+
+module.exports = Task;
 
