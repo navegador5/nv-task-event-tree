@@ -163,10 +163,13 @@ class Task extends Exec {
             if(cond) {
                 ////
                 let ances = curr.$ances_;
-                ances.forEach(ance=>ance[sym_state_rdy]());
+                ances.forEach(ance=>{
+                    ance[sym_rdy](false);
+                    ance[sym_state_open]();
+                });
                 curr[sym_rdy](false);
                 curr[sym_exec]();
-                return(curr)
+                return(this.p_)
             } else {
                 DEBUG(globalThis[sym_debug])(ERRORS.can_only_recover_when_rejected);
             }

@@ -1,4 +1,4 @@
-const evt = require("./index");
+const evt = require("nv-task-event-tree");
 
 
 var J = [

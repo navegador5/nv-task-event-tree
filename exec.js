@@ -222,7 +222,7 @@ function _serial_recv(src,sig,self,data) {
                 rsib[sym_conding]();
             }
         } else if(sig === sym_srj) {
-            _reject(self,src[sym_exception],sym_brj);
+            _reject(self,data,sym_brj);
         } else if(sig === sym_brj) {
             _reject(self,data,sym_brj);
         } else {
@@ -263,7 +263,7 @@ function _parallel_recv(src,sig,self,data) {
              let {total,rs,rj,im,rjchild} = _get_children_stats(self)
              if(im>0) {
                  DEBUG(globalThis[sym_debug])('parallel',self,'found rejected child');
-                 _reject(self,rjchild[sym_exception],sym_brj);
+                 _reject(self,rjchild.exception_,sym_brj);
              } else if(total === rs+im) {
                  DEBUG(globalThis[sym_debug])('parallel',self, 'recv impossible msg from ',src,'and all children resolved or impossible');
                  DEBUG(globalThis[sym_debug])('parallel',self,'executing');
@@ -281,7 +281,7 @@ function _parallel_recv(src,sig,self,data) {
             let {total,rs,rj,im,rjchild} = _get_children_stats(self)
             if(im>0) {
                 DEBUG(globalThis[sym_debug])('parallel',self,'found rejected child');
-                _reject(self,rjchild[sym_exception],sym_brj);
+                _reject(self,rjchild.exception_,sym_brj);
             } else if(total === rs+im) {
                 DEBUG(globalThis[sym_debug])('parallel',self,'recved resolved msg from',src,'all children resolved or impossible');
                 DEBUG(globalThis[sym_debug])('parallel',self,'executing')
@@ -290,7 +290,7 @@ function _parallel_recv(src,sig,self,data) {
                 DEBUG(globalThis[sym_debug])('parallel',self,'recved resolved msg from',src,'but not all children resolved or impossible')
             }
         } else if(sig === sym_srj) {
-            _reject(self,src[sym_exception],sym_brj);
+            _reject(self,data,sym_brj);
         } else if(sig === sym_brj) {
             _reject(self,data,sym_brj);
         } else {
@@ -395,7 +395,7 @@ class Exec extends Completion {
         _add_to_running(this);
         let executor = this.#exec;
         let resolve = (v)=>{    _resolve(this,v,sym_rs)}
-        let reject  = (v)=>{    _reject(this,v,sym_srj)}
+        let reject  = (v)=>{     _reject(this,v,sym_srj)}
         executor(resolve,reject,this);
     }
     [sym_spause]() {
