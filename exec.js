@@ -154,9 +154,17 @@ function _set_reject_state(that,sig) {
 
 function _set_stuck_origin_if_self_reject(rt,that,sig) {
     if(sig === sym_srj) {
-        DEBUG(globalThis[sym_debug])('set curr_ to',that,`when ${that.state_}`)
-        rt[sym_stuck_origin] = that;
-        DEBUG(globalThis[sym_debug])('curr_ is',that)
+        if(!rt.is_pending()) {
+            DEBUG(globalThis[sym_debug])(
+                'not update sym_stuck_origin if not pending',
+                'only update it on the first sym_srj',
+                that,`when ${that.state_}`
+            )
+        } else {
+            DEBUG(globalThis[sym_debug])('set sym_stuck_origin to',that,`when ${that.state_}`)
+            rt[sym_stuck_origin] = that;
+            DEBUG(globalThis[sym_debug])('sym_stuck_origin is',that)
+        }
     } else {}
 }
 
@@ -278,7 +286,7 @@ function _parallel_recv(src,sig,self,data) {
             DEBUG(globalThis[sym_debug])('parallel',self, 'recv bubble pause from ',src);
             self[sym_bpause](data) //透传
         } else if(sig === sym_rs) {
-            let {total,rs,rj,im,rjchild} = _get_children_stats(self)
+            let {total,rs,rj,im,rjchild} = _get_children_stats(self);
             if(im>0) {
                 DEBUG(globalThis[sym_debug])('parallel',self,'found rejected child');
                 _reject(self,rjchild.exception_,sym_brj);
