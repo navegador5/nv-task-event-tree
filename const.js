@@ -108,7 +108,7 @@ module.exports = {
     DFLT_CU_EXECUTOR :(rs,rj,self)=>{rs(self)},
     PARSER_USED_PROPS,
     DFLT_COPY:(src,dst)=>{
-        for(let k in src) {
+        for(let k of Object.keys(src)) {
             if(typeof(k)==='string' && !PARSER_USED_PROPS.includes(k)) {
                 dst[k] = src[k]
             }

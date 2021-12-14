@@ -187,11 +187,11 @@ function dump(tsk) {
         nd.A.conder   = nd.conder_,
         nd.A.executor = nd.executor_;
         nd.A.args_dict = {}
-        for(let k in nd) {
+        for(let k of Object.keys(nd)) {
             if(PARSER_USED_PROPS.includes(k)) {
-            } else {
+            } else if(typeof(k) === 'string') {
                 nd.A.args_dict[k] = nd[k]
-            }
+            } else {}
         }
     }
     let rslt = wfs_tac.jsonize(this);

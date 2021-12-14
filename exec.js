@@ -398,13 +398,13 @@ class Exec extends Completion {
         let reject  = (v)=>{     _reject(this,v,sym_srj)}
         executor(resolve,reject,this);
     }
-    [sym_spause]() {
+    [sym_spause](copy_func=DFLT_COPY) {
         if(this.is_self_executing()) {
-            let nthis = this[sym_respawn]();  //复制,running delete 动作在respawn种完成
+            let nthis = this[sym_respawn](true,copy_func);  //复制,running delete 动作在respawn种完成
             nthis[sym_state_spause]();
-            DEBUG(globalThis[sym_debug])(this,'self paused');
-            if(this.$parent_ !== null) {
-                _send_to_parent(this,sym_spause,this);
+            DEBUG(globalThis[sym_debug])(nthis,'self paused');
+            if(nthis.$parent_ !== null) {
+                _send_to_parent(nthis,sym_spause,nthis);
             } else {
                 DEBUG(globalThis[sym_debug])('self is root')
             }
@@ -426,21 +426,24 @@ class Exec extends Completion {
             DEBUG(globalThis[sym_debug])(ERRORS.can_only_bpause_when_opened);
         }
     }
-    [sym_respawn](copy=false,copy_func=DFLT_COPY) {
+    [sym_respawn](copy=true,copy_func=DFLT_COPY) {
         let forest = this.$forest_;
         let nnd =  forest.node(this.constructor);
-        nnd.conder_ = this.conder_;
+        nnd.name_     = this.name_; 
+        nnd.conder_   = this.conder_;
         nnd.executor_ = this.executor_;
         nnd[sym_renew_psj]();
-        let parent = (this.$forest_===null)?null:this.$parent_;
-        if(parent!==null) {
-            this.$replace_node(nnd);
-        } else {}
+        ////
         let rt = this.$root_;
-        if(rt.running_.has(this)){
-            rt.running_.add(nnd)
+        let in_running = rt.running_.has(this);
+        ////
+        this.$replace_node(nnd);
+        ////now this is disconnected
+        if(in_running){
+            rt.running_.add(nnd);
+            rt.running_.delete(this);
         } else {}
-        _delete_from_running(this);
+        ////
         if(rt.stucked_at_ === this) {
              rt[sym_stuck_origin] = nnd;
         } else {}
@@ -452,9 +455,12 @@ class Exec extends Completion {
         this.$erase();
         return(nnd)
     }
-    [sym_rdy](clear_cond=false) {
+    [sym_rdy](clear_cond=false,renew_psj=true) {
         //soft  不可用于 conding self_executing paused 
-        this[sym_renew_psj]();
+        if(renew_psj) {
+            //bpause 不renew_psj
+            this[sym_renew_psj]();
+        } else {}
         if(clear_cond) {
             this[sym_cond] = noexist
         } else {}
@@ -463,13 +469,13 @@ class Exec extends Completion {
         this[sym_state_rdy]();
         DEBUG(globalThis[sym_debug])(this,'self reready');
     }
-    [sym_reset](copy=false,copy_func=DFLT_COPY) {
+    [sym_reset](copy_func=DFLT_COPY) {
         //判断状态
         if(this.is_conding() || this.is_self_executing()) {
-            let nthis = this[sym_respawn](copy,copy_func);
+            let nthis = this[sym_respawn](true,copy_func);
             _delete_from_running(nthis);
         } else {
-            this[sym_rdy](true);
+            this[sym_rdy](true,true);
         }
         DEBUG(globalThis[sym_debug])(this,'self reset');
     }

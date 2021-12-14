@@ -55,16 +55,16 @@ const DEBUG = require("./debug");
 
 const Exec = require("./exec");
 
-function _reset(that) {
+function _reset(that,copy_func) {
      if(that.is_ready()) {
      } else if(that.is_settled()) {
-          that[sym_rdy](true)
+          that[sym_rdy](true,true)
      } else if(that.is_impossible()){
           that[sym_state_rdy]();
      } else if(that.is_paused()) {
           that[sym_state_rdy]();
      } {
-          that[sym_reset]();
+          that[sym_reset](copy_func);
      }
 }
 
@@ -159,15 +159,15 @@ class Task extends Exec {
     recover() {
        if(this.$is_root()) {
             let curr = this.stucked_at_;
-            let cond = curr.is_self_rejected();
+            let cond = curr?.is_self_rejected();
             if(cond) {
                 ////
                 let ances = curr.$ances_;
                 ances.forEach(ance=>{
-                    ance[sym_rdy](false);
+                    ance[sym_rdy](false,true);
                     ance[sym_state_open]();
                 });
-                curr[sym_rdy](false);
+                curr[sym_rdy](false,true);
                 curr[sym_exec]();
                 return(this.p_)
             } else {
@@ -183,7 +183,7 @@ class Task extends Exec {
             let cond = this.is_pending();
             if(cond) {
                 old_running.forEach(nd=>nd[sym_spause]());
-                return(old_running)
+                return(this.running_)
             } else {
                 DEBUG(globalThis[sym_debug])(ERRORS.can_only_pause_when_pending);
             }
@@ -196,10 +196,16 @@ class Task extends Exec {
             let old_paused = this.running_;
             let cond = this.is_paused();
             if(cond) {
-                let ances = curr.$ances_;
-                ances.forEach(ance=>ance[sym_rdy]());
+                for(let curr of old_paused) {
+                    let ances = curr.$ances_;
+                    ances.forEach(ance=>{
+                        ance[sym_rdy](false,false);    //bpaused no-renew-psj
+                        ance[sym_state_open]();
+                    });
+                }
                 old_paused.forEach(nd=>{
-                    nd[sym_rdy](false);
+                    nd[sym_rdy](false,true);
+                    nd[sym_state_open]();
                     nd[sym_exec]();
                 });
                 return(old_paused)
@@ -211,11 +217,11 @@ class Task extends Exec {
        }
     }
     /////---------------
-    soft_reset() {
+    soft_reset(copy_func=DFLT_COPY) {
        if(this.$is_root()) {
            if(this.is_settled() || this.is_impossible()) {
                let sdfs = this.$sdfs_;
-               sdfs.forEach(nd=>{_reset(nd)});
+               sdfs.forEach(nd=>{_reset(nd,copy_func)});
                this[sym_stuck_origin] = noexist;
                this.running_.clear();
                return(this)
@@ -226,20 +232,20 @@ class Task extends Exec {
            DEBUG(globalThis[sym_debug])(ERRORS.only_on_root_task)
        }
     }
-    hard_reset() {
+    hard_reset(copy_func=DFLT_COPY) {
        if(this.$is_root()) {
             let self = this;
             if(this.is_ready()) {
             } else if(this.is_settled() || this.is_impossible()) {
-                this.soft_reset();
+                this.soft_reset(copy_func);
             } else {
                 let edfs = this.$edfs_;
                 for(let i=0;i<edfs.length-1;i++) {
                     let nd = efds[i];
-                    _reset(nd)
+                    _reset(nd,copy_func)
                 }
                 self = edfs[edfs.length-1];
-                _reset(self)
+                _reset(self,copy_func)
             }
             self[sym_stuck_origin] = noexist;
             self.running_.clear();
