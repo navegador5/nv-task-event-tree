@@ -10,11 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "nv-data-tree-csp-jconvert": "^1.0.4",
-    "nv-data-tree-csp-node": "^1.0.17",
+    "nv-data-tree-csp-node": "^1.0.22",
     "nv-dict-desc": "^1.0.1",
     "nv-facutil-basic": "^1.1.1",
     "nv-facutil-kkject": "^1.0.0",
-    "nv-facutil-promise": "^1.0.27"
+    "nv-facutil-promise": "^1.0.27",
+    "nv-string-basic": "^1.0.31"
   },
   "devDependencies": {
     "nv-random-promise": "^0.0.2"

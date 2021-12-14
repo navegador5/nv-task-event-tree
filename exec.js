@@ -27,7 +27,7 @@ const {
     sym_renew_psj,
     ////-----------------------exec
     sym_rdy,           //软重启 非conding 非pending 状态可用
-    sym_exec_conder,
+    sym_conding,
     sym_open,
     sym_exec,
     sym_rs,
@@ -57,7 +57,9 @@ const Completion = require("./completion");
 
 function _conder_rs(that) {
     if(!that.is_abandoned()) {
+        DEBUG(globalThis[sym_debug])('conder match');
         that[sym_cond] = true;
+        DEBUG(globalThis[sym_debug])('leave sym conding');
         that[sym_open]();
     } else {
         DEBUG(globalThis[sym_debug])(INFOS.ignore_abandoned_cond_tru)
@@ -66,11 +68,13 @@ function _conder_rs(that) {
 
 function _conder_rj(that) {
     if(!that.is_abandoned()) {
+        DEBUG(globalThis[sym_debug])('conder NOT match');
         that[sym_cond] = false;
         let sdfs = that.$sdfs_;
         DEBUG(globalThis[sym_debug])(that,'set deses',sdfs,'to impossible coz conder false');
         sdfs.forEach(nd=>nd[sym_state_im]()); //impossible 只需要设置状态
-        _send_to_parent(that,sym_im); //父节点处理 
+        DEBUG(globalThis[sym_debug])('leave sym conding');
+        _send_to_parent(that,sym_im); //父节点处理
     } else {
         DEBUG(globalThis[sym_debug])(INFOS.ignore_abandoned_cond_fls)
     }
@@ -105,7 +109,7 @@ function _delete_from_running(that) {
 function _cycle(that) {
     let sdfs= that.$sdfs_;
     sdfs.forEach(nd=>nd[sym_reset](true));
-    that[sym_exec_conder]();
+    that[sym_conding]();
 }
 
 function _resolve(that,v,sig) {
@@ -117,13 +121,13 @@ function _resolve(that,v,sig) {
             ////root 必须有promise
             that[sym_psj][1](v);
             _delete_from_running(that);
-            if(that[sym_conder][sym_while]=true) {
+            if(that.conder_[sym_while]===true) {
                 _cycle(that);
             } else {}
         } else if(that.is_serial() || that.is_parallel()) {
             if(that.is_promise_enabled()) {that[sym_psj][1](v)}
             _delete_from_running(that);
-            if(that[sym_conder][sym_while]=true) {
+            if(that.conder_[sym_while]===true) {
                 _cycle(that);
             } else {
                 _send_to_parent(that,sig);
@@ -198,7 +202,7 @@ function _serial_recv(src,sig,self,data) {
                  DEBUG(globalThis[sym_debug])('serial',self, 'recv notlst child impossible from ',src)
                  let rsib = src.$rsib_;
                  DEBUG(globalThis[sym_debug])('rsib',rsib,'of',src,'exec_conder');
-                 rsib[sym_exec_conder]();
+                 rsib[sym_conding]();
              }
         } else if(sig === sym_spause) {
             DEBUG(globalThis[sym_debug])('serial',self, 'recv self pause from ',src);
@@ -215,7 +219,7 @@ function _serial_recv(src,sig,self,data) {
                 DEBUG(globalThis[sym_debug])('serial',self, 'recv notlst child resolved from ',src)
                 let rsib = src.$rsib_;
                 DEBUG(globalThis[sym_debug])('rsib',rsib,'of',src,'exec_conder');
-                rsib[sym_exec_conder]();
+                rsib[sym_conding]();
             }
         } else if(sig === sym_srj) {
             _reject(self,src[sym_exception],sym_brj);
@@ -359,8 +363,10 @@ class Exec extends Completion {
      ////
      is_abandoned()                {return(this.$forest_===null)}
      ////
-     [sym_exec_conder]() {
-         [sym_state_conding]();
+     [sym_conding]() {
+         DEBUG(globalThis[sym_debug])(this,'enter sym_conding');
+         this[sym_state_conding]();
+         DEBUG(globalThis[sym_debug])(this,'state is',this.state_);
          DEBUG(globalThis[sym_debug])(this,'begin check conder... on self');
          let conder_executor = this.#conder;
          conder_executor(()=>{_conder_rs(this)},()=>{_conder_rj(this)},this)
@@ -374,11 +380,11 @@ class Exec extends Completion {
          } else if(this.is_serial()) {
              let fstch = this.$fstch_;
              DEBUG(globalThis[sym_debug])(this,'serial check fstch conder',fstch);
-             fstch[sym_exec_conder]();
+             fstch[sym_conding]();
          } else if(this.is_parallel()) {
              let children = this.$children_;
              DEBUG(globalThis[sym_debug])(this,'parallel check children conder',children);
-             children.forEach(chnd=>chnd[sym_exec_conder]());
+             children.forEach(chnd=>chnd[sym_conding]());
          } else {
              DEBUG(globalThis[sym_debug])(ERRORS.not_supported_type)
          }
@@ -386,7 +392,7 @@ class Exec extends Completion {
     [sym_exec]() {
         this[sym_state_exec]();
         DEBUG(globalThis[sym_debug])(this,'start exec on self');
-        _add_to_running(that);
+        _add_to_running(this);
         let executor = this.#exec;
         let resolve = (v)=>{    _resolve(this,v,sym_rs)}
         let reject  = (v)=>{    _reject(this,v,sym_srj)}
@@ -459,7 +465,7 @@ class Exec extends Completion {
     }
     [sym_reset](copy=false,copy_func=DFLT_COPY) {
         //判断状态
-        if(this.is_conding() || this.is_self_pending()) {
+        if(this.is_conding() || this.is_self_executing()) {
             let nthis = this[sym_respawn](copy,copy_func);
             _delete_from_running(nthis);
         } else {

@@ -27,7 +27,7 @@ const {
     sym_renew_psj,
     ////-----------------------exec
     sym_rdy,           //软重启 非conding 非pending 状态可用
-    sym_exec_conder,
+    sym_conding,
     sym_open,
     sym_exec,
     sym_rs,
@@ -58,7 +58,7 @@ const Exec = require("./exec");
 function _reset(that) {
      if(that.is_ready()) {
      } else if(that.is_settled()) {
-          that[sym_rerdy](true)
+          that[sym_rdy](true)
      } else if(that.is_impossible()){
           that[sym_state_rdy]();
      } else if(that.is_paused()) {
@@ -68,17 +68,44 @@ function _reset(that) {
      }
 }
 
+function _get_des(that,name) {
+    let sdfs = that.$sdfs_;
+    sdfs = sdfs.filter(nd=>nd.name_ === name);
+    if(sdfs.length === 0) {
+        return(null)
+    } else if(sdfs.length === 1) {
+        return(sdfs[0])
+    } else {
+        return(sdfs)
+    }
+}
 
+function _creat_proxy(that) {
+    let h = {
+        get: function(target, property, receiver) {
+             let nds = _get_des(target,property);
+             return(nds)
+        },
+    }
+    let P =new Proxy(that,h)
+    return(P)
+}
+
+
+const {paint} = require("./repr");
 
 class Task extends Exec {
     #name
     #type = TYPES.serial
     #stuck_origin = noexist
     #running = new Set()
+    #proxy   = _creat_proxy(this) 
     ////
     get name_()     {return(this.#name??this.$id_)}
     set name_(name) {this.#name = name}
-    get [Symbol.toStringTag]() {return(this.#name+' : '+this[sym_state])}
+    get [Symbol.toStringTag]() {
+        return(this.#name+' : '+paint(this.state_,this.state_))
+    }
     ////
     set_as_serial()    {this.#type = TYPES.serial}
     set_as_parallel()  {this.#type = TYPES.parallel}
@@ -94,26 +121,20 @@ class Task extends Exec {
     ////
     get running_() {
         let rt = this.$root_;
-        return(rt.running_)
-    }
-    ////
-    get_des_with_name(name) {
-        let sdfs = this.$sdfs_;
-        sdfs = sdfs.filter(nd=>nd.name_ === name);
-        if(sdfs.length === 0) {
-            return(null)
-        } else if(sdfs.length === 1) {
-            return(sdfs[0])
+        if(rt === this) {
+            return(this.#running)
         } else {
-            return(sdfs)
+            return(rt.running_)
         }
     }
+    ////
+    get T_() {return(this.#proxy)}
     ////
     launch() {
         if(this.$is_root()) {
             if(this.is_ready()) {
                 DEBUG(globalThis[sym_debug])('root',this,'nest started...')
-                this[sym_exec_conder]();
+                this[sym_conding]();
                 return(this.p_)
             } else {
                 DEBUG(globalThis[sym_debug])(ERRORS.can_only_start_when_ready)

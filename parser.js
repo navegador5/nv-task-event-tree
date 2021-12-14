@@ -5,7 +5,9 @@ const {
 const Task = require("./task");
 
 const {
-    TYPES,DFLT_CU_CONDER,DFLT_CU_EXECUTOR
+    sym_renew_psj,
+    TYPES,DFLT_CU_CONDER,DFLT_CU_EXECUTOR,
+    PARSER_USED_PROPS 
 } = require("./const")
 
 
@@ -31,13 +33,13 @@ function _fill_one_task(nd,cfg=DFLT_CFG()) {
         throw(ERRORS.not_supported_type)
     }
     ////
-    if(enable_promise) {nd.renew_promise()} else {}
+    if(enable_promise) {nd[sym_renew_psj]()} else {}
     ////
     nd.conder_   = conder;
     nd.executor_ = executor;
     ////
     for(let k in args_dict) {
-        if(k!=='T' && k!=='A') {
+        if(!PARSER_USED_PROPS.includes(k)) {
             nd[k] = args_dict[k]
         } else {
         }
@@ -55,7 +57,7 @@ function load_from_json(J,rtrn_forest=false,max_size) {
         nd.name_ = nd.T;
         delete nd.T;
     });
-    rt[sym_renew_promise]();  //root must have promise
+    rt.enable_promise();  //root must have promise
     if(rtrn_forest) {
         return([rt,forest])
     } else {

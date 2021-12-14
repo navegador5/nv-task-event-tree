@@ -27,7 +27,7 @@ module.exports = {
     sym_renew_psj,
     ////-----------------------exec
     sym_rdy,
-    sym_exec_conder,
+    sym_conding,
     sym_open,
     sym_exec,
     sym_rs,

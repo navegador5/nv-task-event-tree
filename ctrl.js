@@ -2,6 +2,7 @@ const {
     sym_cond,
     sym_if,
     sym_elif,
+    sym_else,
     sym_while,
 } = require("./const");
 

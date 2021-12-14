@@ -110,7 +110,7 @@ function _get_xxx_deses(that,method) {
 
 
 class State extends _Node {
-     #curr = 1 
+     #curr = 0 
      get state_()               {return(_NS[this.#curr])}
      ////
      get [sym_state]()  {return(this.#curr)}
