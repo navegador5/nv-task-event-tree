@@ -1,8 +1,4 @@
 const {
-    PARSER_USED_PROPS
-} = require("./const");
-
-const {
     wfs_tac,
 }  = require("nv-data-tree-csp-jconvert");
 
@@ -76,47 +72,53 @@ let paint;
 
 
 if(is_node) {
-    paint = (s,state) => {
-        let [underscore,fg] = STATE_CLR[state];
-        if(underscore) {
-            return(paint_ansi8_underscore(fg,s))
+    paint = (s,state,with_clr=true) => {
+        if(with_clr) {
+            let [underscore,fg] = STATE_CLR[state];
+            if(underscore) {
+                return(paint_ansi8_underscore(fg,s))
+            } else {
+                return(paint_ansi8_normal(fg,s))
+            }
         } else {
-            return(paint_ansi8_normal(fg,s))
+            return(s)
         }
     }
 } else {
     paint = (s,state)=>s;
 }
 
-const NEXT_SIGN = '-> ';
-const PARA_SIGN = '-| ' ;
-const SLBLK = '(';
-const SRBLK = ')';
-const PLBLK = '{';
-const PRBLK = '}'
-
+const {
+    PARSER_USED_PROPS,
+    NEXT_SIGN,SLBLK,SRBLK,
+    PARA_SIGN,PLBLK,PRBLK
+} = require("./const");
 
 
 const str_bsc = require("nv-string-basic");
 
 const _width = (sary)=> Math.max.apply(null,sary.map(s=>s.length));
 
-function _creat_stag(T) {
-    return(`[${T.name_} : ${T.state_}]`)
+function _creat_stag(T,with_state=true) {
+    if(with_state) {
+        return(`[${T.name_} : ${T.state_}]`)
+    } else {
+        return(`[${T.name_}]`)
+    }
 }
 
-function _get_max_width_of_stag(tsk) {
+function _get_max_width_of_stag(tsk,with_state=true) {
     let sdfs = tsk.$sdfs_;
-    let stags = sdfs.map(T=>_creat_stag(T));
+    let stags = sdfs.map(T=>_creat_stag(T,with_state));
     let max_width = _width(stags);
     return(max_width)
 }
 
 
-function show(tsk,rtrn=false) {
+function show(tsk,rtrn=false,with_state=true,with_clr=true) {
     let lines= [];
     let height = tsk.$height_;
-    let max_width = _get_max_width_of_stag(tsk);
+    let max_width = _get_max_width_of_stag(tsk,with_state);
     tsk.$sedfs_.forEach(r=>{
         let [T,flag] = r;
         let indent = '    '.repeat(T.$depth_);
@@ -133,9 +135,9 @@ function show(tsk,rtrn=false) {
                 lines.push(s)
             }
         } else {
-            let s = _creat_stag(T);
+            let s = _creat_stag(T,with_state);
             let para_sign_pre_padding = ' '.repeat(max_width-s.length);
-            s = paint(s,T.state_);
+            s = paint(s,T.state_,with_clr);
             let RBLK = T.is_serial()?SRBLK:PRBLK;
             if(T.$is_root()) {
                 s = indent + RBLK + NEXT_SIGN + s;
@@ -204,8 +206,6 @@ function dump(tsk) {
 
 
 module.exports = {
-    NEXT_SIGN,
-    PARA_SIGN,
     paint,
     show,
     dump

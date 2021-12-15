@@ -158,7 +158,7 @@ Uncaught TypeError: curr?.is_self_rejected is not a function
 > tsk.running_                               //this is for paused
 Set(1) { Task [tsk0022 : self_paused] {} }
 >
-> tsk.stucked_at_              //this is for rejected
+> tsk.rejected_at_              //this is for rejected
 Symbol(noexist)
 >
 

@@ -96,7 +96,7 @@ Promise {
 */
 
 
-> tsk.stucked_at_
+> tsk.rejected_at_
 Task [tsk000 : self_rejected] {}
 >
 

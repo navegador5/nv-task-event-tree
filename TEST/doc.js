@@ -19,7 +19,7 @@ module.exports = {
     sym_state_bpause     ,
     sym_state_im         ,
     ////--------------------completion
-    sym_stuck_origin,    //getter setter 当前停止在哪个nd ,用来recover(self_rejected)/continue(self_paused)
+    sym_reject_origin,    //getter setter 当前停止在哪个nd ,用来recover(self_rejected)/continue(self_paused)
     sym_cond,            //setter conder 的结果
     sym_rslt,            //setter
     sym_exception,       //setter
@@ -41,7 +41,6 @@ module.exports = {
     //
     DFLT_CU_CONDER   :(rtrn_true,rtrn_false,self)=>{rtrn_true(self)},
     DFLT_CU_EXECUTOR :(rs,rj,self)=>{rs(self)},
-    PARSER_USED_PROPS,
     DFLT_COPY:(src,dst)=>{
         for(let k in src) {
             if(typeof(k)==='string' && !PARSER_USED_PROPS.includes(k)) {
@@ -49,6 +48,10 @@ module.exports = {
             }
         }
     },
+    ////
+    PARSER_USED_PROPS,
+    NEXT_SIGN,SLBLK,SRBLK,
+    PARA_SIGN,PLBLK,PRBLK,
     ////
     sym_if,
     sym_elif,

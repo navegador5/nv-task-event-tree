@@ -78,7 +78,7 @@ const EXEC_SYMS = creat_ksym_dict_with_prefix(
 
 const COMPLETION_SYMS = creat_ksym_dict_with_prefix(
     [
-        'stuck_origin',
+        'reject_origin',
         'cond',
         'rslt',
         'exception',
@@ -95,6 +95,14 @@ const CTRL_SYMS = creat_ksym_dict_with_prefix(
 
 
 const PARSER_USED_PROPS    = ['T','A']
+const NEXT_SIGN = '-> ';
+const PARA_SIGN = '-| ' ;
+const SLBLK = '(';
+const SRBLK = ')';
+const PLBLK = '{';
+const PRBLK = '}'
+
+
 
 module.exports = {
     sym_debug,
@@ -106,7 +114,11 @@ module.exports = {
     ERRORS,
     DFLT_CU_CONDER   :(rtrn_true,rtrn_false,self)=>{rtrn_true(self)},
     DFLT_CU_EXECUTOR :(rs,rj,self)=>{rs(self)},
+    ////
     PARSER_USED_PROPS,
+    NEXT_SIGN,SLBLK,SRBLK,
+    PARA_SIGN,PLBLK,PRBLK,
+    ////
     DFLT_COPY:(src,dst)=>{
         for(let k of Object.keys(src)) {
             if(typeof(k)==='string' && !PARSER_USED_PROPS.includes(k)) {
@@ -117,8 +129,12 @@ module.exports = {
     ////
 }
 
+
+
 add_ksyms_to_exports(
     module.exports,
     STATE_SYMS,EXEC_SYMS,COMPLETION_SYMS,CTRL_SYMS
 );
+
+
 

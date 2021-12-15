@@ -113,15 +113,16 @@ Promise {
 }
 > tsk
 Task [@root@ : bubble_rejected] {}
-> tsk.stucked_at_
+> tsk.rejected_at_
 Task [tsk001 : self_rejected] {}
 
 */
 
 
 > tsk
-Task [@root@ : bubble_rejected] {}
-> tsk.stucked_at_
+Task [@root@ : bubble_rejected] {}   //bubble-propagated-reject from src: tsk001 
+ 
+> tsk.rejected_at_                   //the reject src: tsk001
 Task [tsk001 : self_rejected] {}
 
 

@@ -19,7 +19,7 @@ const {
     sym_state_bpause     ,
     sym_state_im         ,
     ////--------------------completion
-    sym_stuck_origin,    //setter 当前停止在哪个nd ,用来recover(self_rejected)/continue(self_paused)
+    sym_reject_origin,    //setter 当前停止在哪个nd ,用来recover(self_rejected)/continue(self_paused)
     sym_cond,            //setter conder 的结果
     sym_rslt,            //setter
     sym_exception,       //setter
@@ -97,7 +97,7 @@ const {paint} = require("./repr");
 class Task extends Exec {
     #name
     #type = TYPES.serial
-    #stuck_origin = noexist
+    #reject_origin = noexist
     #running = new Set()
     #proxy   = _creat_proxy(this) 
     ////
@@ -112,11 +112,11 @@ class Task extends Exec {
     is_serial()        {return(this.#type === TYPES.serial)}
     is_parallel()      {return(this.#type === TYPES.parallel)}
     ////
-    get [sym_stuck_origin]() {return(this.#stuck_origin)}
-    set [sym_stuck_origin](nd)  {this.#stuck_origin = nd}
-    get stucked_at_()  {
+    get [sym_reject_origin]()    {return(this.#reject_origin)}
+    set [sym_reject_origin](nd)  {this.#reject_origin = nd}
+    get rejected_at_()  {
          let rt = this.$root_;
-         return(rt[sym_stuck_origin])
+         return(rt[sym_reject_origin])
     }
     ////
     get running_() {
@@ -158,7 +158,7 @@ class Task extends Exec {
     }
     recover() {
        if(this.$is_root()) {
-            let curr = this.stucked_at_;
+            let curr = this.rejected_at_;
             let cond = curr?.is_self_rejected();
             if(cond) {
                 ////
@@ -222,7 +222,7 @@ class Task extends Exec {
            if(this.is_settled() || this.is_impossible()) {
                let sdfs = this.$sdfs_;
                sdfs.forEach(nd=>{_reset(nd,copy_func)});
-               this[sym_stuck_origin] = noexist;
+               this[sym_reject_origin] = noexist;
                this.running_.clear();
                return(this)
            } else {
@@ -247,7 +247,7 @@ class Task extends Exec {
                 self = edfs[edfs.length-1];
                 _reset(self,copy_func)
             }
-            self[sym_stuck_origin] = noexist;
+            self[sym_reject_origin] = noexist;
             self.running_.clear();
             return(self)
        } else {
@@ -264,8 +264,13 @@ const {
 } = require("./repr");
 
 Task.prototype.show = function(rtrn=false) {
-    return(show(this,rtrn))
+    return(show(this,rtrn,true,true))
 }
+
+Task.prototype.unparse = function() {
+    return(show(this,true,false,false))
+}
+
 Task.prototype.dump = function() {
     return(dump(this))
 }
