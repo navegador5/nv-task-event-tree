@@ -12,6 +12,13 @@ const TYPES = dict_desc.mdict(['serial','parallel']);
 
 const kkject = require("nv-facutil-kkject");
 
+const TIPS = kkject(
+    'TIPS',[
+        'parallel_child_cant_use_elif_or_else'
+    ]
+);
+
+
 const INFOS = kkject(
     'INFOS',[
         'ignore_abandoned_cond_fls',
@@ -19,7 +26,7 @@ const INFOS = kkject(
         'ignore_abandoned_resolved',
         'ignore_abandoned_rejected'
     ]
-)
+);
 
 const ERRORS = kkject(
     'ERRORS',[
@@ -42,7 +49,7 @@ const ERRORS = kkject(
           'should_not_recv_child_pause_noti_if_stopped',
           'can_soft_reset_only_when_settled_or_impossible'
     ]
-)
+);
 
 const STATE_SYMS = creat_ksym_dict_with_prefix(
     [
@@ -110,6 +117,7 @@ module.exports = {
     noexist,
     ////
     TYPES,
+    TIPS,
     INFOS,
     ERRORS,
     DFLT_CU_CONDER   :(rtrn_true,rtrn_false,self)=>{rtrn_true(self)},
@@ -122,6 +130,7 @@ module.exports = {
     DFLT_COPY:(src,dst)=>{
         for(let k of Object.keys(src)) {
             if(typeof(k)==='string' && !PARSER_USED_PROPS.includes(k)) {
+                console.log(src,dst)
                 dst[k] = src[k]
             }
         }

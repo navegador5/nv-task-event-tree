@@ -6,6 +6,7 @@ const {
     TYPES,
     ERRORS,
     INFOS,
+    TIPS,
     ////---------------state
     sym_state,         //getter
     sym_state_rdy        ,
@@ -331,10 +332,26 @@ class Exec extends Completion {
      #exec   = DFLT_CU_EXECUTOR
      ////
      get conder_()                 {return(this.#conder)}
-     set conder_(f)                {this.#conder=f}
+     set conder_(f)                {
+         let pnd = this.$parent_;
+         if(pnd === null) {
+             this.#conder=f
+         } else {
+             if(pnd.is_serial()) {
+                 this.#conder=f
+             } else {
+                 if(this.is_conder_elif() || this.is_conder_else()) {
+                     console.log(TIPS.parallel_child_cant_use_elif_or_else)
+                 } else {
+                     this.#conder=f
+                 }
+             }
+         }
+     }
      is_conder_if()                {return(this.#conder[sym_if]===true)}
      is_conder_elif()              {return(this.#conder[sym_elif]===true)}
      is_conder_else()              {return(this.#conder[sym_else]===true)}
+     is_conder_while()             {return(this.#conder[sym_while]===true)}
      get if_head_()                {
           let lsib = this
           while(lsib !== null) {
@@ -350,13 +367,13 @@ class Exec extends Completion {
          let lsib = this.$lsib_;
          while(lsib !== null) {
              if(lsib.is_conder_if()) {
-                if(lsib[sym_cond] === true) {
+                if(lsib.cond_ === true) {
                     return(false)
                 } else {
                     return(true)
                 }
              } else if(lsib.is_conder_elif()) {
-                 if(lsib[sym_cond] === true) {
+                 if(lsib.cond_ === true) {
                      return(false)
                  } else {}
              } else {
@@ -366,7 +383,6 @@ class Exec extends Completion {
          }
          return(true)
      }
-     is_conder_while()             {return(this.#conder[sym_while]===true)}
      ////
      get executor_()               {return(this.#exec)}
      set executor_(f)              {this.#exec=f}
