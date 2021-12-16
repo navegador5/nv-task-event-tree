@@ -7,17 +7,11 @@ const Task = require("./task");
 const {
     sym_renew_psj,
     TYPES,DFLT_CU_CONDER,DFLT_CU_EXECUTOR,
-    PARSER_USED_PROPS 
+    PARSER_USED_PROPS, 
+    DFLT_CFG,
 } = require("./const")
 
 
-const DFLT_CFG = ()=>({
-    type:TYPES[0],
-    enable_promise:false,
-    conder:DFLT_CU_CONDER,
-    executor:DFLT_CU_EXECUTOR,
-    args_dict:{}
-})
 
 
 function _fill_one_task(nd,cfg=DFLT_CFG()) {
@@ -65,11 +59,11 @@ function load_from_json(J,rtrn_forest=false,max_size) {
     }
 }
 
-const DFLT_TAG_PARSER = (s)=>s.trim();
 
 const {
     NEXT_SIGN,SLBLK,SRBLK,
-    PARA_SIGN,PLBLK,PRBLK
+    PARA_SIGN,PLBLK,PRBLK,
+    DFLT_TAG_PARSER,
 } = require("./const");
 
 const {
@@ -260,7 +254,6 @@ function load_from_blue_print(bp,max_size=10000,rtrn_forest=false,tag_parser=DFL
 module.exports = {
     DFLT_TAG_PARSER,
     load_from_blue_print,
-    DFLT_CFG,
     load_from_json,
 }
 

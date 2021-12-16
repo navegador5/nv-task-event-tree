@@ -89,6 +89,10 @@ if(is_node) {
 }
 
 const {
+    TYPES,
+    ////
+    DFLT_CFG,
+    ////
     PARSER_USED_PROPS,
     NEXT_SIGN,SLBLK,SRBLK,
     PARA_SIGN,PLBLK,PRBLK
@@ -196,7 +200,7 @@ function dump(tsk) {
             } else {}
         }
     }
-    let rslt = wfs_tac.jsonize(this);
+    let rslt = wfs_tac.jsonize(tsk);
     sdfs.forEach(nd=>{
         delete nd.T;
         delete nd.A;

@@ -1,9 +1,7 @@
 const consts = require("./const");
 const ctrl   = require("./ctrl");
 const {
-    DFLT_TAG_PARSER,
     load_from_blue_print,
-    DFLT_CFG,
     load_from_json,
 } = require("./parser");
 
@@ -18,9 +16,9 @@ module.exports = {
     noexist:consts.noexist,
     TYPES:consts.TYPES,
     ////
-    DFLT_TAG_PARSER,
+    DFLT_TAG_PARSER:consts.DFLT_TAG_PARSER,
     load_from_blue_print,
-    DFLT_CFG,
+    DFLT_CFG:consts.DFLT_CFG,
     load_from_json,
     ////
     IF:ctrl.IF,

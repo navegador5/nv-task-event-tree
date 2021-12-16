@@ -107,9 +107,13 @@ const PARA_SIGN = '-| ' ;
 const SLBLK = '(';
 const SRBLK = ')';
 const PLBLK = '{';
-const PRBLK = '}'
+const PRBLK = '}';
+const DFLT_TAG_PARSER = (s)=>s.trim();
 
 
+
+const DFLT_CU_CONDER   = (rtrn_true,rtrn_false,self)=>{rtrn_true(self)}
+const DFLT_CU_EXECUTOR = (rs,rj,self)=>{rs(self)}
 
 module.exports = {
     sym_debug,
@@ -120,12 +124,13 @@ module.exports = {
     TIPS,
     INFOS,
     ERRORS,
-    DFLT_CU_CONDER   :(rtrn_true,rtrn_false,self)=>{rtrn_true(self)},
-    DFLT_CU_EXECUTOR :(rs,rj,self)=>{rs(self)},
+    DFLT_CU_CONDER,
+    DFLT_CU_EXECUTOR,
     ////
     PARSER_USED_PROPS,
     NEXT_SIGN,SLBLK,SRBLK,
     PARA_SIGN,PLBLK,PRBLK,
+    DFLT_TAG_PARSER,
     ////
     DFLT_COPY:(src,dst)=>{
         for(let k of Object.keys(src)) {
@@ -135,6 +140,14 @@ module.exports = {
             }
         }
     },
+    ////
+    DFLT_CFG:()=>({
+        type:TYPES[0],
+        enable_promise:false,
+        conder:DFLT_CU_CONDER,
+        executor:DFLT_CU_EXECUTOR,
+        args_dict:{}
+    }),
     ////
 }
 
