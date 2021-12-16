@@ -264,6 +264,187 @@ example
 
 
 
+            > p         //tsk.p_
+            Promise {
+              [
+                Symbol(noexist), 'tsk00',
+                'tsk000',        'tsk001',
+                'tsk0010',       'tsk0011',
+                'tsk0012',       'tsk002',
+                'tsk0020',       'tsk0021',
+                'tsk0022'
+              ],
+              [Symbol(async_id_symbol)]: 44,
+              [Symbol(trigger_async_id_symbol)]: 5,
+              [Symbol(destroyed)]: { destroyed: false }
+            }
+            >
+
+
+
+### reset
+
+- soft\_reset 
+     
+     //IF the tsk in a settled-state:
+     //    resolved | self_rejected | bubble_rejected | impossible
+     //OR ready-state : ready
+     //    USE tsk.soft_reset()
+     
+
+- hard\_reset
+
+     //IF the tsk in a pending-state:
+     //    opened | self_executing
+     //OR in a paused-state:
+     //    self_paused | bubble_paused
+     //OR in conding-state:            which is USED to support IF/ELIF/ELSE/WHILE
+     //    conding
+     //USE tsk.hard_reset()      
+     //----
+     //hard_reset  will respawn many nodes, do NOT use it
+     //   coz in JS layer ,you CANT real pause a executing task (such as http)
+     //   so  we must replace/respawn the task-node to avoid pollution
+
+
+
+
+### pause    AND continue
+
+       //since the task-tree settled, we first reset the tsk
+       //上面的任务树已经执行完一次了,先调用 tsk.soft_reset() 重置一下
+        
+        > tsk.soft_reset()
+        Task [0 : ready] {}
+        >
+        > tsk.show()
+        (
+            (
+                [tsk000 : ready]->
+                {
+                    [tsk0010 : ready]-|
+                    [tsk0011 : ready]-|
+                    [tsk0012 : ready]-|
+                }-> [tsk001 : ready]->
+                {
+                    [tsk0020 : ready]-|
+                    [tsk0021 : ready]-|
+                    [tsk0022 : ready]-|
+                }-> [tsk002 : ready]
+            )-> [tsk00 : ready]
+        )-> [0 : ready]
+
+        //we change the executor on [tsk0011] to a larger delay, for observing the pause behavior
+        //为了进行pause 的实验,我们把 [tsk0011] 上的 executor 换一个deley 大点的
+
+        tsk.T_.tsk0011.executor_         = creat_executor(60000)
+         
+        var p = tsk.launch();
+        /*
+            tsk000 started at 2021-12-16T11:07:11.145Z
+            tsk000 succ at 2021-12-16T11:07:16.153Z
+            tsk0010 started at 2021-12-16T11:07:16.155Z
+            tsk0011 started at 2021-12-16T11:07:16.155Z
+            tsk0012 started at 2021-12-16T11:07:16.156Z
+            tsk0010 succ at 2021-12-16T11:07:21.158Z
+            tsk0012 succ at 2021-12-16T11:07:21.162Z
+        */
+         
+        //now we pause it
+        //现在我们暂停它
+        > tsk.pause()
+           Set(1) { Task [tsk0011 : self_paused] {} }
+        >
+        > tsk.running_
+          Set(1) { Task [tsk0011 : self_paused] {} } 
+       
+        //running_ is a getter for all-currently self-executing|self-paused task-nodes
+        //   it is a Set , for support parallel (maybe multi task-nodes self-executing at the same time)
+        //running_ 包含所有 self-executing|self-paused 节点
+        //   它是一个Set,目的是为了支持!并行!父节点, 因为在JS层宏观上,同一时刻可能有多个节点在执行
+        
+        > tsk.show()
+         
+
+![mixed-blue-print-state4](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/4.png)
+
+
+        !!!!IMPORTANT!!!!
+        //let we  wait for enough time, you will notice the below log(since [tsk0011] already paused)
+        //我们等待足够长时间,能够看到下面的LOG(虽然[tsk0011]已经paused了) 
+             !!!【tsk0011 succ at 2021-12-16T11:08:16.157Z】!!!
+        //but just IGNORE it, coz its from the executor-frame-on-old-task-node   
+        //since you can NOT real pause most function in JS layer(such as http request)
+        //so nv-task-event-tree USE a trick: it replace/respawn  the old-task-node with a-new-one 
+        //on the same place in task-tree
+        //但是不用担心，忽略它好了
+        //它其实是从 旧的[tsk0011] 上的executor-frame来的
+        //因为在JS层,多大多数函数来说,并不能真正的暂停,例如 http request
+        //所以nv-task-event-tree用了一个技巧: replace/respawn  旧的[tsk0011] 
+        //此时虽然节点上的属性 executor conder state 与 旧的[tsk0011] 完全一样,但是是一个新节点
+        
+        > tsk.show()
+
+![mixed-blue-print-state5](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/5.png)
+
+
+        > p
+        Promise {
+          <pending>,                         // still pending
+          [Symbol(async_id_symbol)]: 161,
+          [Symbol(trigger_async_id_symbol)]: 5,
+          [Symbol(destroyed)]: { destroyed: false }
+        }
+        >
+
+        //now we continue the task-tree
+        //现在我们执行 tsk.continue() 
+
+        > tsk.continue()
+        tsk0011 started at 2021-12-16T11:11:37.037Z
+        Set(1) { Task [tsk0011 : self_executing] {} }
+        
+
+![mixed-blue-print-state6](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/6.png)
+
+
+            >
+            tsk0011 succ at 2021-12-16T11:12:37.049Z
+            tsk001 started at 2021-12-16T11:12:37.050Z
+            tsk001 succ at 2021-12-16T11:12:42.051Z
+            tsk0020 started at 2021-12-16T11:12:42.052Z
+            tsk0021 started at 2021-12-16T11:12:42.053Z
+            tsk0022 started at 2021-12-16T11:12:42.054Z
+            tsk0020 succ at 2021-12-16T11:12:47.058Z
+            tsk0021 succ at 2021-12-16T11:12:47.059Z
+            tsk0022 succ at 2021-12-16T11:12:47.060Z
+            tsk002 started at 2021-12-16T11:12:47.067Z
+            tsk002 succ at 2021-12-16T11:12:52.076Z
+            tsk00 started at 2021-12-16T11:12:52.077Z
+            tsk00 succ at 2021-12-16T11:12:57.081Z
+
+            > tsk.running_
+            Set(0) {}
+            >
+
+
+![mixed-blue-print-state7](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/7.png)
+
+            //OK .done  reset the task-tree
+            tsk.soft_reset();
+
+
+
+### rejected AND recover
+
+
+
+
+
+### carryon
+- carryon EQUALS recover() | continue(), based on the stuck-reason
+
+
 
 ### load\_from\_json
 - see [APIS.load\_from\_json](#APIS) for format-detail
@@ -288,16 +469,6 @@ example
         var tsk = evt.load_from_json(J); 
 
 
-
-
-### rejected AND recover
-
-
-### pause    AND continue
-
-
-### carryon
-- carryon EQUALS recover() | continue(), based on the stuck-reason
 
 
 
