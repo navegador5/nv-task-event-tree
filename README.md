@@ -228,7 +228,8 @@ example
 
             > tsk.show()
 
-IMG0
+![mixed-blue-print-state0](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/0.png)
+
 
             tsk0010 succ at 2021-12-16T09:31:44.000Z
             tsk0011 succ at 2021-12-16T09:31:44.007Z
@@ -241,7 +242,8 @@ IMG0
 
             > tsk.show()
 
-IMG1
+![mixed-blue-print-state1](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/1.png)
+
 
             tsk0020 succ at 2021-12-16T09:31:54.028Z
             tsk0021 succ at 2021-12-16T09:31:54.034Z
@@ -250,14 +252,15 @@ IMG1
             tsk002 succ at 2021-12-16T09:31:59.046Z
             tsk00 started at 2021-12-16T09:31:59.048Z
 
-IMG2
+![mixed-blue-print-state2](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/2.png)
+
 
 
             tsk00 succ at 2021-12-16T09:32:04.051Z
 
             > tsk.show()
 
-IMG3
+![mixed-blue-print-state3](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/3.png)
 
 
 
