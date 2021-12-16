@@ -492,6 +492,13 @@ class Exec extends Completion {
         } else {}
         this[sym_rslt] = noexist;
         this[sym_exception] = noexist;
+        ////
+        let rt = this.$root_;
+        rt.running_.delete(this);
+        if(rt.rejected_at_ === this) {
+             rt[sym_reject_origin] = noexist;
+        } else {}
+        ////
         this[sym_state_rdy]();
         DEBUG(globalThis[sym_debug])(this,'self reready');
     }

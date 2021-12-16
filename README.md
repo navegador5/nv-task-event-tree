@@ -437,12 +437,115 @@ example
 
 ### rejected AND recover
 
+       tsk.soft_reset();
 
+       //we change the executor on [tsk0011] to let it random fail
+       //为了进行rejected 的实验,我们把 [tsk0011] 上的 executor 换一个大概率fail 小概率succ的
+
+        tsk.T_.tsk0011.executor_         =  (rtrn,thrw,self) => {
+                console.log(self.name_,'started at',new Date())
+                setTimeout(
+                    ()=> {
+                        let failed = Math.random() > 0.25;
+                        if(failed) {
+                            console.log(self.name_,'failed at',new Date())
+                            thrw(new Error(self.name_))
+                        } else {
+                            console.log(self.name_,'succ at',new Date())
+                            rtrn(self.name_)
+                        }
+                    },
+                    delay
+                )
+        }
+
+        var p = tsk.launch();
+
+        >
+        tsk000 started at 2021-12-16T12:09:03.870Z
+        tsk000 succ at 2021-12-16T12:09:08.877Z
+        tsk0010 started at 2021-12-16T12:09:08.883Z
+        tsk0011 started at 2021-12-16T12:09:08.890Z
+        tsk0012 started at 2021-12-16T12:09:08.896Z
+        tsk0010 succ at 2021-12-16T12:09:13.895Z
+        tsk0011 failed at 2021-12-16T12:09:13.898Z
+        Uncaught Error: tsk0011                        //----->
+        tsk0012 succ at 2021-12-16T12:09:13.918Z
+        >
+
+        > tsk
+        Task [0 : bubble_rejected] {}
+
+
+        > tsk.rejected_at_                  //tsk.rejected_at_ is a getter of current-self-rejected node
+        Task [tsk0011 : self_rejected] {}
+        >
+
+![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/8.png)
+
+
+        > p
+        Promise {
+          <rejected> [Error: tsk0011],
+          [Symbol(async_id_symbol)]: 44,
+          [Symbol(trigger_async_id_symbol)]: 5,
+          [Symbol(destroyed)]: { destroyed: false }
+        }
+        >
+
+        //now lets try to recover
+        //   recover will renew the tsk.p_
+        //recover 会产生一个新的promise 
+        > var np = tsk.recover()         
+        tsk0011 started at 2021-12-16T12:10:13.566Z
+        tsk0011 failed at 2021-12-16T12:10:18.569Z
+        Uncaught Error: tsk0011
+        
+        > var np = tsk.recover()                    //---AGAIN
+        tsk0011 started at 2021-12-16T12:10:21.757Z
+        tsk0011 succ at 2021-12-16T12:10:26.764Z
+        tsk001 started at 2021-12-16T12:10:26.765Z
+        tsk001 succ at 2021-12-16T12:10:31.773Z
+        tsk0020 started at 2021-12-16T12:10:31.775Z
+        tsk0021 started at 2021-12-16T12:10:31.776Z
+        tsk0022 started at 2021-12-16T12:10:31.782Z
+        tsk0020 succ at 2021-12-16T12:10:36.782Z
+        tsk0021 succ at 2021-12-16T12:10:36.783Z
+        tsk0022 succ at 2021-12-16T12:10:36.787Z
+        tsk002 started at 2021-12-16T12:10:36.791Z
+        tsk002 succ at 2021-12-16T12:10:41.798Z
+        tsk00 started at 2021-12-16T12:10:41.799Z
+        tsk00 succ at 2021-12-16T12:10:46.805Z
+
+
+        > tsk.rejected_at_
+        Symbol(noexist)
+
+
+![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/9.png)
 
 
 
 ### carryon
 - carryon EQUALS recover() | continue(), based on the stuck-reason
+
+
+### ctrl keywords 
+- IF(conder)
+- ELIF(conder)
+- ELSE
+- WHILE(condet)
+
+
+#### if/elif/else
+
+
+
+#### while
+
+
+
+### wrap
 
 
 
