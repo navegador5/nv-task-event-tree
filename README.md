@@ -284,27 +284,27 @@ example
 
 ### reset
 
-- soft\_reset 
+#### soft\_reset 
      
-     //IF the tsk in a settled-state:
-     //    resolved | self_rejected | bubble_rejected | impossible
-     //OR ready-state : ready
-     //    USE tsk.soft_reset()
+         //IF the tsk in a settled-state:
+         //    resolved | self_rejected | bubble_rejected | impossible
+         //OR ready-state : ready
+         //    USE tsk.soft_reset()
      
 
-- hard\_reset
+####  hard\_reset
 
-     //IF the tsk in a pending-state:
-     //    opened | self_executing
-     //OR in a paused-state:
-     //    self_paused | bubble_paused
-     //OR in conding-state:            which is USED to support IF/ELIF/ELSE/WHILE
-     //    conding
-     //USE tsk.hard_reset()      
-     //----
-     //hard_reset  will respawn many nodes, do NOT use it
-     //   coz in JS layer ,you CANT real pause a executing task (such as http)
-     //   so  we must replace/respawn the task-node to avoid pollution
+         //IF the tsk in a pending-state:
+         //    opened | self_executing
+         //OR in a paused-state:
+         //    self_paused | bubble_paused
+         //OR in conding-state:            which is USED to support IF/ELIF/ELSE/WHILE
+         //    conding
+         //USE tsk.hard_reset()      
+         //----
+         //hard_reset  will respawn many nodes, do NOT use it
+         //   coz in JS layer ,you CANT real pause a executing task (such as http)
+         //   so  we must replace/respawn the task-node to avoid pollution
 
 
 
