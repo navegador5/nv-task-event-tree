@@ -525,6 +525,7 @@ example
 ![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/9.png)
 
 
+         tsk.soft_reset();
 
 ### carryon
 - carryon EQUALS recover() | continue(), based on the stuck-reason
@@ -537,8 +538,188 @@ example
 - WHILE(condet)
 
 
-#### if/elif/else
+#### conder
 
+     conder:(rtrn_tru,rtrn_fls,self) => {...}
+     //similar to executor 
+     //on each task use .conder_ =   to set it    
+
+#### if/elif/else
+- if chain only work on children of serial-task-node
+
+     //let us create a simple task-tree: just a serial-link
+     // IF/ELIF/ELSE 只能使用在 串行 父节点的 子节点上
+
+     var bp =`([tsk0]->[tsk1]->[tsk2]->[tsk3]->[tsk4]->[tsk5])`;
+     
+     var tsk = evt.load_from_blue_print(bp)
+
+        /*
+        > tsk.show()
+        (
+            (
+                [tsk0 : ready]->
+                [tsk1 : ready]->
+                [tsk2 : ready]->
+                [tsk3 : ready]->
+                [tsk4 : ready]->
+                [tsk5 : ready]
+            )-> [1 : ready]          //this is the auto-generated anonymous parent
+        )-> [0 : ready]              //this is the auto-generated root
+        */
+
+
+       //we use a conder-factory to creat base-conder
+       //    which return(true) if [tsk].param === 3
+       //    else  return(false)
+       //later we will USE evt.IF/evt.ELIF to wrap the base-conder                 
+       // 首先写一个简单的生成 conder 模板 的函数
+       //    [tsk].param === 3 时满足条件
+       //    我们稍后要使用 evt.IF/evt.ELIF 把conder包起来
+
+        function creat_conder(delay) {
+            let _f = (rtrn_tru,rtrn_fls,self)=> {
+                console.log(self.name_,'started conder at',new Date())
+                setTimeout(
+                    ()=> {
+                        console.log(self.name_,'finish conder at',new Date())
+                        if(self.param === 3) {
+                            rtrn_tru()
+                        } else {
+                            rtrn_fls()
+                        }
+                    },
+                    delay
+                )
+           }
+           return(_f)
+        }
+
+        //the ctrl logic to impl:
+        //我们实现如下逻辑
+        /*
+            if(param === 0) {
+                [tsk0].exec()
+            } else if(param ===1) {
+                [tsk1].exec()
+            } else if(param ===2) {
+                [tsk2].exec()
+            } else if(param ===3) {
+                [tsk3].exec()
+            } else if(param ===3) {
+                //impossible branch
+                [tsk4].exec()
+            } else {
+                //impossible branch
+                [tsk5].exec()
+            }
+
+        */
+
+        //使用evt.IF 和  evt.ELIF
+        //  需要 evt.IF(conder)  evt.ELIF(conder)
+        //使用evt.ELSE 不用带参数
+        //   evt.ELSE is internally a special base-conder
+        //   it is NOT a conder-wrapper
+        //   so use it without conder-param
+
+
+        tsk.T_.tsk0.param               = 0
+        tsk.T_.tsk0.conder_             = evt.IF(creat_conder(10000))
+        tsk.T_.tsk0.executor_           = creat_executor(2000)
+
+        tsk.T_.tsk1.param               = 1
+        tsk.T_.tsk1.conder_             = evt.ELIF(creat_conder(10000))
+        tsk.T_.tsk1.executor_           = creat_executor(2000)
+
+
+        tsk.T_.tsk2.param               = 2
+        tsk.T_.tsk2.conder_             = evt.ELIF(creat_conder(10000))
+        tsk.T_.tsk2.executor_           = creat_executor(2000)
+
+
+        tsk.T_.tsk3.param               = 3
+        tsk.T_.tsk3.conder_             = evt.ELIF(creat_conder(10000))
+        tsk.T_.tsk3.executor_           = creat_executor(2000)
+
+
+        tsk.T_.tsk4.param               = 3
+        tsk.T_.tsk4.conder_             = evt.ELIF(creat_conder(10000))
+        tsk.T_.tsk4.executor_           = creat_executor(2000)
+
+
+        tsk.T_.tsk5.param               = 3
+        tsk.T_.tsk5.conder_             = evt.ELSE 
+                                        //ELSE have no conder-param
+        tsk.T_.tsk5.executor_           = creat_executor(2000)
+
+
+        /*
+            > tsk.$sdfs_.map(nd=>nd.conder_)
+            [
+              [Function: DFLT_CU_CONDER],
+              [Function: DFLT_CU_CONDER],
+              [Function: _if] { [Symbol(if)]: true },
+              [Function: _elif] { [Symbol(elif)]: true },
+              [Function: _elif] { [Symbol(elif)]: true },
+              [Function: _elif] { [Symbol(elif)]: true },
+              [Function: _elif] { [Symbol(elif)]: true },
+              [Function: ELSE] { [Symbol(else)]: true }
+            ]
+            > tsk.$sdfs_.map(nd=>nd)
+            [
+              Task [0 : ready] {},
+              Task [1 : ready] {},
+              Task [tsk0 : ready] { param: 0 },
+              Task [tsk1 : ready] { param: 1 },
+              Task [tsk2 : ready] { param: 2 },
+              Task [tsk3 : ready] { param: 3 },
+              Task [tsk4 : ready] { param: 3 },
+              Task [tsk5 : ready] { param: 3 }
+            ]
+
+        */
+
+        var p = tsk.launch()
+        >
+        tsk0 started conder at 2021-12-16T13:06:52.321Z
+        >
+
+![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/10.png)
+
+
+        >
+        tsk0 finish conder at 2021-12-16T13:07:02.332Z
+        tsk1 started conder at 2021-12-16T13:07:02.339Z
+        >
+
+
+![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/11.png)
+
+
+        > 
+        tsk1 finish conder at 2021-12-16T13:07:12.354Z
+        tsk2 started conder at 2021-12-16T13:07:12.355Z
+        > 
+
+
+![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/12.png)
+
+        > 
+        tsk2 finish conder at 2021-12-16T13:07:22.364Z
+        tsk3 started conder at 2021-12-16T13:07:22.365Z
+        > 
+
+
+![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/13.png)
+
+        >
+        tsk3 finish conder at 2021-12-16T13:07:32.374Z
+        tsk3 started at 2021-12-16T13:07:32.374Z
+        tsk3 succ at 2021-12-16T13:07:34.378Z
+        0 started at 2021-12-16T13:07:34.384Z
+        0 succ at 2021-12-16T13:07:36.392Z
+        >
 
 
 #### while
