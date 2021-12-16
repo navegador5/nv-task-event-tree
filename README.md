@@ -522,7 +522,7 @@ example
         Symbol(noexist)
 
 
-![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/9.png)
+![mixed-blue-print-state9](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/9.png)
 
 
          tsk.soft_reset();
@@ -685,7 +685,7 @@ example
         tsk0 started conder at 2021-12-16T13:06:52.321Z
         >
 
-![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/10.png)
+![mixed-blue-print-state10](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/10.png)
 
 
         >
@@ -694,7 +694,7 @@ example
         >
 
 
-![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/11.png)
+![mixed-blue-print-state11](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/11.png)
 
 
         > 
@@ -703,7 +703,7 @@ example
         > 
 
 
-![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/12.png)
+![mixed-blue-print-state12](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/12.png)
 
         > 
         tsk2 finish conder at 2021-12-16T13:07:22.364Z
@@ -711,7 +711,7 @@ example
         > 
 
 
-![mixed-blue-print-state8](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/13.png)
+![mixed-blue-print-state13](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/13.png)
 
         >
         tsk3 finish conder at 2021-12-16T13:07:32.374Z
