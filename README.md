@@ -684,6 +684,8 @@ example
         >
         tsk0 started conder at 2021-12-16T13:06:52.321Z
         >
+        tsk.show()
+
 
 ![mixed-blue-print-state10](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/10.png)
 
@@ -692,6 +694,7 @@ example
         tsk0 finish conder at 2021-12-16T13:07:02.332Z
         tsk1 started conder at 2021-12-16T13:07:02.339Z
         >
+        tsk.show()
 
 
 ![mixed-blue-print-state11](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/11.png)
@@ -701,6 +704,7 @@ example
         tsk1 finish conder at 2021-12-16T13:07:12.354Z
         tsk2 started conder at 2021-12-16T13:07:12.355Z
         > 
+        tsk.show()
 
 
 ![mixed-blue-print-state12](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/12.png)
@@ -708,18 +712,17 @@ example
         > 
         tsk2 finish conder at 2021-12-16T13:07:22.364Z
         tsk3 started conder at 2021-12-16T13:07:22.365Z
-        > 
-
-
-![mixed-blue-print-state13](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/13.png)
-
-        >
         tsk3 finish conder at 2021-12-16T13:07:32.374Z
         tsk3 started at 2021-12-16T13:07:32.374Z
         tsk3 succ at 2021-12-16T13:07:34.378Z
         0 started at 2021-12-16T13:07:34.384Z
         0 succ at 2021-12-16T13:07:36.392Z
         >
+
+        tsk.show() 
+
+![mixed-blue-print-state13](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/13.png)
+
 
 
 #### while
