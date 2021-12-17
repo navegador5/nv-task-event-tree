@@ -1222,6 +1222,43 @@ PERFORMANCE TEST
           [Symbol(trigger_async_id_symbol)]: 5,
           [Symbol(destroyed)]: { destroyed: false }
         }
+        */
+
+        //you can observe the current state with .running_  AND .rejected_at_
+        //可以使用 .running_  和 .rejected_at_ 在任务树运行过程中观察
+
+
+        /*
+        > big_task_tree.running_
+        Set(2) {
+          Task [tsk328374 : self_executing] {},
+          Task [tsk328488 : self_executing] {}
+        }
+        > big_task_tree.running_
+        Set(16) {
+          Task [tsk330086 : self_executing] {},
+          Task [tsk330100 : self_executing] {},
+          Task [tsk330102 : self_executing] {},
+          Task [tsk330105 : self_executing] {},
+          Task [tsk330111 : self_executing] {},
+          Task [tsk330120 : self_executing] {},
+          Task [tsk330122 : self_executing] {},
+          Task [tsk330126 : self_executing] {},
+          Task [tsk330134 : self_executing] {},
+          Task [tsk330138 : self_executing] {},
+          Task [tsk330144 : self_executing] {},
+          Task [tsk330149 : self_executing] {},
+          Task [tsk330157 : self_executing] {},
+          Task [tsk330160 : self_executing] {},
+          Task [tsk330161 : self_executing] {},
+          Task [tsk330166 : self_executing] {}
+        }
+        .......
+        */
+
+
+
+        /*
         > end at:  2021-12-17T10:37:07.224Z
         costed:  24698 ms
 
