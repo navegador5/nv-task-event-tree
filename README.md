@@ -1105,6 +1105,237 @@ example
 PERFORMANCE TEST
 ================
 
+      //now we try a big-task-tree of 500000 task-nodes to test the performance
+      //   coz nv-task-event-tree is pure JS,so its performance NOT good enough
+
+      //接下来我们准备一个巨大的 任务树 来测试下巨量异步任务的performance
+      //   因为nv-task-event-tree 是纯JS实现的,所以它的performance一般般
+      //   主要是内存耗费比较大(为了提速,使用了一些耗费内存的技巧)
+
+      const {rand} = require("nv-random-tree")
+
+      //准备一个随机产生异步任务的工厂
+
+        function creat_executor(delay) {
+            let _f = (rtrn,thrw,self)=> {
+                setTimeout(
+                    ()=> {
+                         rtrn(self.name_)
+                    },
+                    delay
+                )
+           }
+           return(_f)
+        }
+
+       //creat 500000 task,each task have max-of-50 child-task 
+       //创建任务树，大小为500000, 每个任务最多50个子任务节点
+
+       var big_task_tree = rand(50,500000,undefined,evt.Task,2)
+
+        /*
+        > big_task_tree.$sdfs_.length
+        500000
+        >
+        */
+
+
+        big_task_tree.enable_promise()
+
+
+        big_task_tree.$sdfs_.forEach(
+            (nd,i)=> {
+                nd.name_ = `tsk${i}`;
+                let rand_type = (Math.random() >0.5)
+                if(rand_type) {                       //随机生成 串行 或 并行 节点
+                    nd.set_as_serial()
+                } else {
+                    nd.set_as_parallel()
+                }
+                nd.executor_ = creat_executor(Math.random()*2)  //每个任务延时 1-2 毫秒
+            }
+        );
+
+         
+        //you can see ,we have 62789 serial-task, 62454 is_parallel task, 374757 leaf-task 
+        //总计 62789 个串行任务, 62454个并行任务,374757个叶子任务
+
+        /*
+
+        > big_task_tree.$sdfs_.filter(nd=>nd.$is_leaf()).length
+        374757
+        > big_task_tree.$sdfs_.filter(nd=>nd.is_serial() && !nd.$is_leaf()).length
+        62789
+        > big_task_tree.$sdfs_.filter(nd=>nd.is_parallel() && !nd.$is_leaf()).length
+        62454
+        >
+        */
+
+        /*
+         87698 root      20   0 1005916 413616  33404 S  0.0 20.5   0:11.73 node
+         
+        > process.memoryUsage()
+        {
+          rss: 423542784,
+          heapTotal: 381763584,
+          heapUsed: 358841448,                        // about 350M memory for 500000 nodes
+          external: 1066990,
+          arrayBuffers: 24792
+        }
+        >
+        */
+
+
+        async function tst() {
+            let start = new Date();
+            let start_ms = start.getTime()
+            console.log('begin at :',start);
+            ////
+            await big_task_tree.launch();
+            ////
+            let end = new Date();
+            let end_ms = end.getTime()
+            console.log('end at: ',end);
+            console.log("costed: ", end_ms-start_ms,'ms')
+        }
+
+
+        > big_task_tree.p_
+        Promise {
+          <pending>,
+          [Symbol(async_id_symbol)]: 51,
+          [Symbol(trigger_async_id_symbol)]: 5,
+          [Symbol(destroyed)]: { destroyed: false }
+        }
+        >
+
+        tst()
+
+
+
+        /*
+        > tst()
+        begin at : 2021-12-17T10:36:42.526Z
+        Promise {
+          <pending>,
+          [Symbol(async_id_symbol)]: 171,
+          [Symbol(trigger_async_id_symbol)]: 5,
+          [Symbol(destroyed)]: { destroyed: false }
+        }
+        > end at:  2021-12-17T10:37:07.224Z
+        costed:  24698 ms
+
+        > big_task_tree.p_
+        Promise {
+          'tsk0',
+          [Symbol(async_id_symbol)]: 51,
+          [Symbol(trigger_async_id_symbol)]: 5,
+          [Symbol(destroyed)]: { destroyed: false }
+        }
+        >
+        > big_task_tree.$sdfs_
+        [
+          Task [tsk0 : resolved] {},
+          Task [tsk1 : resolved] {},
+          .....
+          Task [tsk98 : resolved] {},
+          Task [tsk99 : resolved] {},
+          ... 499900 more items
+        ]
+        >
+        */
+
+
+        !!!!IMPORTANT!!!!
+        //you can get the blue_print back for topology AND reusing
+        //可以使用.unparse() 来获取blue_print
+        var blue_print = big_task_tree.unparse()
+        
+
+        /* 
+                > bp
+                '{\n' +
+                  '    {\n' +
+                  '        (\n' +
+                  '            (\n' +
+                  '                (\n' +
+                  '                    (\n' +
+                  '                        (\n' +
+                  '                            [tsk7]\n' +
+                  '                        )-> [tsk6]-> \n' +
+                  '                        (\n' +
+                  '                            {\n' +
+                  '                                (\n' +
+                  '                                    {\n' +
+                  '                                        (\n' +
+                  '                                            [tsk13]-> \n' +
+                  '                                            [tsk14]-> \n' +
+                  '                                            [tsk15]-> \n' +
+                  '                                            [tsk16]-> \n' +
+                  '                                            [tsk17]-> \n' +
+                  '                                            [tsk18]-> \n' +
+                  '                                            [tsk19]\n' +
+                  '                                        )-> [tsk12]        -| \n' +
+                  '                                        {\n' +
+                  '                                            [tsk21]    -| \n' +
+                  '                                            [tsk22]    -| \n' +
+                  '                                            [tsk23]    -| \n' +
+                  '                                        }-> [tsk20]        -| \n' +
+                  ...........
+
+          */
+
+      
+
+### dump
+
+     // .unparse() can ONLY get the topology(blue_print) BACK
+     // .unparse() 只能拿回topology(blue_print)
+
+
+     //if you need full info(conder,executor,props..., task-node-type,) BACK
+     // USE .dump()
+     // 如果需要详细的全部现场,使用 .dump()
+
+     //dumped JSON could be reload by evt.load_from_json(J)
+
+            > var J = big_task_tree.dump()
+
+            /*
+                  .....
+                  [Object],    [Array],     'tsk495452', [Object],    [Array],
+                  'tsk495495', [Object],    [Array],     'tsk495525', [Object],
+                  [Array],     'tsk495533', [Object],    'tsk495534', [Object],
+                  [Array],     'tsk495556', [Object],    [Array],     'tsk495572',
+                  [Object],    [Array],     'tsk495605', [Object],    'tsk495606',
+                  [Object],    [Array],     'tsk495615', [Object],    [Array],
+                  'tsk495650', [Object],    'tsk495651', [Object],    'tsk495652',
+                  [Object],    [Array],     'tsk495672', [Object],    [Array],
+                  'tsk495688', [Object],    [Array],     'tsk495717', [Object],
+                  [Array],     'tsk495737', [Object],    [Array],     'tsk495769',
+                  [Object],    [Array],     'tsk495817', [Object],    [Array],
+                  'tsk495823', [Object],    [Array],     'tsk495839', [Object],
+                  'tsk495840', [Object],    [Array],     'tsk495876', [Object],
+                  [Array],     'tsk495916', [Object],    [Array],     'tsk495949',
+                  [Object],    [Array],     'tsk495983', [Object],    'tsk495984',
+                  ... 33 more items
+                ],
+                'tsk496189',
+                {
+                  type: '1',
+                  enable_promise: false,
+                  conder: [Function: DFLT_CU_CONDER],
+                  executor: [Function: _f],
+                  args_dict: {}
+                },
+                ... 30 more items
+              ]
+            ]
+            >
+            */
+
+
+            big_task_tree.soft_reset()
 
 
 

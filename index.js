@@ -7,6 +7,8 @@ const {
 
 const wrap   = require("./wrap");
 
+const Task   = require("./task");
+
 globalThis[consts.sym_debug] = false;
 
 module.exports = {
@@ -27,4 +29,6 @@ module.exports = {
     WHILE:ctrl.WHILE,
     ////
     wrap,
+    ////
+    Task
 }

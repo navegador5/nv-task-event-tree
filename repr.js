@@ -101,7 +101,15 @@ const {
 
 const str_bsc = require("nv-string-basic");
 
-const _width = (sary)=> Math.max.apply(null,sary.map(s=>s.length));
+const _width = (sary)=> {
+    let width = 0;
+    for(let s of sary) {
+        if(s.length>width) {
+            width = s.length
+        } else {}
+    }
+    return(width)
+}
 
 function _creat_stag(T,with_state=true) {
     if(with_state) {

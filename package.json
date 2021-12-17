@@ -18,6 +18,7 @@
     "nv-string-basic": "^1.0.31"
   },
   "devDependencies": {
-    "nv-random-promise": "^0.0.2"
+    "nv-random-promise": "^0.0.2",
+    "nv-random-tree": "^1.0.3"
   }
 }
