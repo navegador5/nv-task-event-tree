@@ -1,26 +1,27 @@
+const ODP = Object.defineProperty;
+
 async function try_until_succ(tsk,max_times=Infinity) {
-    let R;
-    let flag =false;
-    let c = 0;
-    try {
-        R = await tsk.launch();
-        flag = false;
-    } catch (err) {
-        flag = true
-    }
-    c = c + 1;
-    /////////////////////////////////
-    while(flag && c < max_times) {
+        let R;
+        let flag =false;
+        let c = 0;
         try {
-            R = await tsk.recover();
+            R = await tsk.launch();
             flag = false;
-        } catch(err) {
+        } catch (err) {
             flag = true
         }
-        c = c + 1
-    }
-    ////
-    return(R)
+        c = c + 1;
+        /////////////////////////////////
+        while(flag && c < max_times && !tsk.is_paused()) {
+            try {
+                R = await tsk.recover();
+                flag = false;
+            } catch(err) {
+                flag = true
+            }
+            c = c + 1
+        }
+        return(R)
 }
 
 function _hist_push(history,history_size,settled) {
@@ -32,8 +33,7 @@ function _hist_push(history,history_size,settled) {
 
 async function limited_auto_recover_loop(tsk,times=1,history_size=10,history=[],counter={}) {
     counter.c =0;
-    let flag =false;
-    while(true && counter.c <times) {
+    while(true && counter.c <times && !tsk.is_paused()) {
         if(flag === false) {
             try {
                 let rslt = await tsk.launch();
@@ -71,7 +71,7 @@ function endless_auto_recover_loop(tsk,history_size=10) {
 
 async function repeat_until_fail(tsk,times=1,history_size=10,history=[],counter={}) {
     counter.c =0;
-    while(true && counter.c <times) {
+    while(true && counter.c <times && !tsk.is_paused()) {
         try {
             let rslt = await tsk.launch();
             _hist_push(history,history_size,rslt);
@@ -87,7 +87,7 @@ async function repeat_until_fail(tsk,times=1,history_size=10,history=[],counter=
 
 async function repeat_ignore_fail(tsk,times=1,history_size=10,history=[],counter={}) {
     counter.c =0;
-    while(true && counter.c <times) {
+    while(true && counter.c <times && !tsk.is_paused()) {
         try {
             let rslt = await tsk.launch();
             _hist_push(history,history_size,rslt);

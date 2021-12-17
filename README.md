@@ -731,18 +731,228 @@ example
 
 ![mixed-blue-print-state13](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/13.png)
 
-
+        tsk.soft_reset()
 
 #### while
 
+        tsk.soft_reset()
+
+        //we change the base-conder and creat_executor to TEST evt.WHILE  
+        //我们改变一下creat_conder 和 creat_executor 的逻辑
+        //实验一下 WHILE 关键字
+
+        function creat_conder(delay) {
+            let _f = (rtrn_tru,rtrn_fls,self)=> {
+                console.log(self.name_,'started conder at',new Date())
+                setTimeout(
+                    ()=> {
+                        console.log(self.name_,'finish conder at',new Date(),self.param)
+                        if(self.param < 3) {       //==================>
+                            rtrn_tru()
+                        } else {
+                            rtrn_fls()
+                        }
+                    },
+                    delay
+                )
+           }
+           return(_f)
+        }
+
+        function creat_executor(delay) {
+            let _f = (rtrn,thrw,self)=> {
+                console.log(self.name_,'started at',new Date())
+                setTimeout(
+                    ()=> {
+                        console.log(self.name_,'succ at',new Date())
+                        self.param = self.param +1       //==================>
+                        rtrn(self.name_)
+                    },
+                    delay
+                )
+           }
+           return(_f)
+        }
+      
+        ////
+
+        tsk.executor_                   = creat_executor(2000)
 
 
-### wrap
+        tsk.T_.tsk0.param               = 0                 //========================>
+        tsk.T_.tsk0.conder_             = evt.WHILE(creat_conder(1000))
+        tsk.T_.tsk0.executor_           = creat_executor(2000)
+
+        tsk.T_.tsk1.param               = 0                 //========================>
+        tsk.T_.tsk1.conder_             = evt.WHILE(creat_conder(1000))
+        tsk.T_.tsk1.executor_           = creat_executor(2000)
 
 
+        tsk.T_.tsk2.param               = 0                 //========================>
+        tsk.T_.tsk2.conder_             = evt.WHILE(creat_conder(1000))
+        tsk.T_.tsk2.executor_           = creat_executor(2000)
 
-### load\_from\_json
-- see [APIS.load\_from\_json](#APIS) for format-detail
+
+        tsk.T_.tsk3.param               = 0                 //========================>
+        tsk.T_.tsk3.conder_             = evt.WHILE(creat_conder(1000))
+        tsk.T_.tsk3.executor_           = creat_executor(2000)
+
+
+        tsk.T_.tsk4.param               = 0                  //========================>
+        tsk.T_.tsk4.conder_             = evt.WHILE(creat_conder(1000))
+        tsk.T_.tsk4.executor_           = creat_executor(2000)
+
+
+        tsk.T_.tsk5.param               = 0                   //========================>
+        tsk.T_.tsk5.conder_             = evt.WHILE(creat_conder(1000))       
+        tsk.T_.tsk5.executor_           = creat_executor(2000)
+
+        //// 
+       
+            /*
+            > tsk.$sdfs_.map(nd=>nd.conder_)
+            [
+              [Function: DFLT_CU_CONDER],                         //DFLT_CU_CONDER will do NOTHING
+              [Function: DFLT_CU_CONDER],                         //DFLT_CU_CONDER will do NOTHING
+              [Function: _while_frame] { [Symbol(while)]: true },
+              [Function: _while_frame] { [Symbol(while)]: true },
+              [Function: _while_frame] { [Symbol(while)]: true },
+              [Function: _while_frame] { [Symbol(while)]: true },
+              [Function: _while_frame] { [Symbol(while)]: true },
+              [Function: _while_frame] { [Symbol(while)]: true }
+            ]
+            >
+
+            > tsk.$sdfs_.map(nd=>nd)
+            [
+              Task [0 : ready] {},
+              Task [1 : ready] {},
+              Task [tsk0 : ready] { param: 0 },
+              Task [tsk1 : ready] { param: 0 },
+              Task [tsk2 : ready] { param: 0 },
+              Task [tsk3 : ready] { param: 0 },
+              Task [tsk4 : ready] { param: 0 },
+              Task [tsk5 : ready] { param: 0 }
+            ]
+            */
+
+            var p = tsk.launch()
+
+            /*
+            > var p = tsk.launch()
+            tsk0 started conder at 2021-12-17T05:55:10.668Z
+            tsk0 finish conder at 2021-12-17T05:55:11.672Z 0
+            tsk0 started at 2021-12-17T05:55:11.678Z   <-------------------------------------
+            tsk0 succ at 2021-12-17T05:55:13.687Z      ------------------------------------->
+            tsk0 started conder at 2021-12-17T05:55:13.689Z
+            tsk0 finish conder at 2021-12-17T05:55:14.694Z 1
+            tsk0 started at 2021-12-17T05:55:14.698Z   <-------------------------------------
+            tsk0 succ at 2021-12-17T05:55:16.705Z      ------------------------------------->
+            tsk0 started conder at 2021-12-17T05:55:16.706Z
+            tsk0 finish conder at 2021-12-17T05:55:17.709Z 2
+            tsk0 started at 2021-12-17T05:55:17.712Z    <-------------------------------------
+            tsk0 succ at 2021-12-17T05:55:19.713Z       ------------------------------------->
+            tsk0 started conder at 2021-12-17T05:55:19.714Z
+            tsk0 finish conder at 2021-12-17T05:55:20.716Z 3
+            tsk1 started conder at 2021-12-17T05:55:20.718Z
+            tsk1 finish conder at 2021-12-17T05:55:21.720Z 0
+            tsk1 started at 2021-12-17T05:55:21.724Z
+            tsk1 succ at 2021-12-17T05:55:23.734Z
+            tsk1 started conder at 2021-12-17T05:55:23.738Z
+            tsk1 finish conder at 2021-12-17T05:55:24.744Z 1
+            tsk1 started at 2021-12-17T05:55:24.748Z
+            tsk1 succ at 2021-12-17T05:55:26.756Z
+            tsk1 started conder at 2021-12-17T05:55:26.757Z
+            tsk1 finish conder at 2021-12-17T05:55:27.759Z 2
+            tsk1 started at 2021-12-17T05:55:27.759Z
+            tsk1 succ at 2021-12-17T05:55:29.762Z
+            tsk1 started conder at 2021-12-17T05:55:29.763Z
+            tsk1 finish conder at 2021-12-17T05:55:30.766Z 3
+            tsk2 started conder at 2021-12-17T05:55:30.767Z
+            tsk2 finish conder at 2021-12-17T05:55:31.769Z 0
+            tsk2 started at 2021-12-17T05:55:31.770Z
+            tsk2 succ at 2021-12-17T05:55:33.774Z
+            tsk2 started conder at 2021-12-17T05:55:33.778Z
+            tsk2 finish conder at 2021-12-17T05:55:34.782Z 1
+            tsk2 started at 2021-12-17T05:55:34.785Z
+            tsk2 succ at 2021-12-17T05:55:36.790Z
+            tsk2 started conder at 2021-12-17T05:55:36.791Z
+            tsk2 finish conder at 2021-12-17T05:55:37.795Z 2
+            tsk2 started at 2021-12-17T05:55:37.796Z
+            tsk2 succ at 2021-12-17T05:55:39.798Z
+            tsk2 started conder at 2021-12-17T05:55:39.801Z
+            tsk2 finish conder at 2021-12-17T05:55:40.804Z 3
+            tsk3 started conder at 2021-12-17T05:55:40.810Z
+            tsk3 finish conder at 2021-12-17T05:55:41.812Z 0
+            tsk3 started at 2021-12-17T05:55:41.813Z
+            tsk3 succ at 2021-12-17T05:55:43.819Z
+            tsk3 started conder at 2021-12-17T05:55:43.820Z
+            tsk3 finish conder at 2021-12-17T05:55:44.822Z 1
+            tsk3 started at 2021-12-17T05:55:44.822Z
+            tsk3 succ at 2021-12-17T05:55:46.827Z
+            tsk3 started conder at 2021-12-17T05:55:46.832Z
+            tsk3 finish conder at 2021-12-17T05:55:47.839Z 2
+            tsk3 started at 2021-12-17T05:55:47.840Z
+            tsk3 succ at 2021-12-17T05:55:49.847Z
+            tsk3 started conder at 2021-12-17T05:55:49.847Z
+            tsk3 finish conder at 2021-12-17T05:55:50.850Z 3
+            tsk4 started conder at 2021-12-17T05:55:50.851Z
+            tsk4 finish conder at 2021-12-17T05:55:51.855Z 0
+            tsk4 started at 2021-12-17T05:55:51.858Z
+            tsk4 succ at 2021-12-17T05:55:53.865Z
+            tsk4 started conder at 2021-12-17T05:55:53.866Z
+            tsk4 finish conder at 2021-12-17T05:55:54.867Z 1
+            tsk4 started at 2021-12-17T05:55:54.870Z
+            tsk4 succ at 2021-12-17T05:55:56.874Z
+            tsk4 started conder at 2021-12-17T05:55:56.879Z
+            tsk4 finish conder at 2021-12-17T05:55:57.886Z 2
+            tsk4 started at 2021-12-17T05:55:57.888Z
+            tsk4 succ at 2021-12-17T05:55:59.894Z
+            tsk4 started conder at 2021-12-17T05:55:59.897Z
+            tsk4 finish conder at 2021-12-17T05:56:00.902Z 3
+            tsk5 started conder at 2021-12-17T05:56:00.903Z
+            tsk5 finish conder at 2021-12-17T05:56:01.904Z 0
+            tsk5 started at 2021-12-17T05:56:01.905Z
+            tsk5 succ at 2021-12-17T05:56:03.910Z
+            tsk5 started conder at 2021-12-17T05:56:03.912Z
+            tsk5 finish conder at 2021-12-17T05:56:04.914Z 1
+            tsk5 started at 2021-12-17T05:56:04.915Z
+            tsk5 succ at 2021-12-17T05:56:06.916Z
+            tsk5 started conder at 2021-12-17T05:56:06.918Z
+            tsk5 finish conder at 2021-12-17T05:56:07.919Z 2
+            tsk5 started at 2021-12-17T05:56:07.919Z
+            tsk5 succ at 2021-12-17T05:56:09.923Z
+            tsk5 started conder at 2021-12-17T05:56:09.926Z
+            tsk5 finish conder at 2021-12-17T05:56:10.931Z 3
+            0 started at 2021-12-17T05:56:10.936Z
+            0 succ at 2021-12-17T05:56:12.944Z
+            */
+       
+            tsk.soft_reset() 
+
+### wrap function for event-loop
+
+- see [APIS.wrap](###wrap) for function-signature-detail
+
+        //nv-task-event-tree provide 7 APIS for run a loop of tsk
+        //evt 提供了7个API, 用来启动一个tsk loop
+        //主要为方便一些使用,比如你想 24小时不间断的爬一个网站
+        //    同时自动重试
+
+            0. try_until_succ                  //直到task-tree 成功，遇到错误自动恢复继续
+            1. limited_auto_recover_loop       //有限次数的try_until_succ,
+            2. endless_auto_recover_loop       //无限次数的try_until_succ, 除非手动停止
+            3. repeat_until_fail               // 有限次数的,直到遇到错误
+            4. repeat_ignore_fail              // 有限次数的,忽略错误反复run,不自动恢复,而是每次重新run
+            5. endless_repeat_loop_until_fail  //repeat_until_fail 的无限版, 除非手动停止 
+            6. endless_repeat_loop_ignore_fail //repeat_ignore_fail 的无限版, 除非手动停止
+
+       //this time we dont USE blue_print, we try load_from_json to build task-tree
+       // J is a top-to-down style config
+
+       //这次我们不使用blue_print, 我们使用load_from_json 构造task-tree
+       //和blue_print不同, J 是自顶向下书写的传统模型
+       //J 的好处是 可以 预先把 conder, executor 添在里面(但是这种方式不好,一团糟)
 
         var J = [
             'tsk00',{type:'serial'},[
@@ -761,9 +971,139 @@ example
             ]
         ]
 
-        var tsk = evt.load_from_json(J); 
+        var tsk = evt.load_from_json(J)
 
 
+
+        /*
+        tsk.show()
+
+        (
+            {
+                [tsk000 : ready]         -|
+                {
+                    [tsk0010 : ready]-|
+                    [tsk0011 : ready]-|
+                    [tsk0012 : ready]-|
+                }-> [tsk001 : ready]     -|
+                {
+                    [tsk0020 : ready]-|
+                    [tsk0021 : ready]-|
+                    [tsk0022 : ready]-|
+                }-> [tsk002 : ready]     -|
+            }-> [tsk00 : ready]
+        )-> [@root@ : ready]
+
+        */
+
+        //we creat a random promise factory
+        //我们创建一个随机resolve/reject 的 executor工厂
+
+        function creat_executor(delay) {
+            let _f = (rtrn,thrw,self)=> {
+                console.log(self.name_,'started at',new Date())
+                setTimeout(
+                    ()=> {
+                        let fail = Math.random() > 0.5;         //------------------------->
+                        if(fail) {
+                            console.log(self.name_,'failed at',new Date());
+                            thrw(self.name_)
+                        } else {
+                            console.log(self.name_,'succ at',new Date());
+                            rtrn(self.name_)
+                        }
+                    },
+                    delay
+                )
+           }
+           return(_f)
+        }
+
+
+            tsk.T_.tsk0020.executor_           = creat_executor(2000)
+            tsk.T_.tsk0021.executor_           = creat_executor(2000)
+            tsk.T_.tsk0022.executor_           = creat_executor(2000)
+                tsk.T_.tsk002.executor_        = creat_executor(3000)
+
+
+            tsk.T_.tsk001.$sdfs_.forEach(tsk=> {
+                tsk.executor_  = creat_executor(2000)
+            });
+                tsk.T_.tsk001.executor_         = creat_executor(3000)
+
+
+                tsk.T_.tsk000.executor_         = creat_executor(3000)
+
+                      tsk.T_.tsk00.executor_    = creat_executor(4000)
+                           tsk.executor_        =(rtrn,thrw,self) => {
+                                rtrn(self.$sdfs_.map(nd=>nd.rslt_))
+                           }
+
+            ////
+
+            var p = evt.wrap.try_until_succ(tsk)
+
+        /*
+        tsk000 started at 2021-12-17T06:27:20.933Z
+        tsk000 failed at 2021-12-17T06:27:23.934Z              //------------>
+        tsk000 started at 2021-12-17T06:27:23.946Z             //AUTO recover at FAILED node [tsk000]
+        tsk000 succ at 2021-12-17T06:27:26.952Z
+        tsk0010 started at 2021-12-17T06:27:26.959Z
+        tsk0011 started at 2021-12-17T06:27:26.962Z
+        tsk0012 started at 2021-12-17T06:27:26.966Z
+        tsk0010 succ at 2021-12-17T06:27:28.963Z
+        tsk0011 succ at 2021-12-17T06:27:28.966Z
+        tsk0012 failed at 2021-12-17T06:27:28.969Z            //------------>
+        tsk0012 started at 2021-12-17T06:27:28.971Z           //AUTO recover at FAILED node [tsk0012]
+        tsk0012 succ at 2021-12-17T06:27:30.976Z
+        tsk001 started at 2021-12-17T06:27:30.977Z
+        tsk001 succ at 2021-12-17T06:27:33.984Z
+        tsk0020 started at 2021-12-17T06:27:33.989Z
+        tsk0021 started at 2021-12-17T06:27:33.993Z
+        tsk0022 started at 2021-12-17T06:27:33.995Z
+        tsk0020 succ at 2021-12-17T06:27:35.996Z
+        tsk0021 succ at 2021-12-17T06:27:35.997Z
+        tsk0022 failed at 2021-12-17T06:27:36.003Z             //------------>
+        tsk0022 started at 2021-12-17T06:27:36.006Z            //AUTO recover at FAILED node [tsk0022]
+        tsk0022 succ at 2021-12-17T06:27:38.010Z
+        tsk002 started at 2021-12-17T06:27:38.011Z
+        tsk002 succ at 2021-12-17T06:27:41.015Z
+        tsk00 started at 2021-12-17T06:27:41.016Z
+        tsk00 failed at 2021-12-17T06:27:45.023Z              //------------>
+        tsk00 started at 2021-12-17T06:27:45.025Z            //AUTO recover at FAILED node [tsk00]
+        tsk00 succ at 2021-12-17T06:27:49.030Z
+
+        */
+
+
+        /*
+        > p
+        Promise {
+          [
+            Symbol(noexist), 'tsk00',
+            'tsk000',        'tsk001',
+            'tsk0010',       'tsk0011',
+            'tsk0012',       'tsk002',
+            'tsk0020',       'tsk0021',
+            'tsk0022'
+          ],
+          [Symbol(async_id_symbol)]: 99,
+          [Symbol(trigger_async_id_symbol)]: 5,
+          [Symbol(destroyed)]: { destroyed: false }
+        }
+        >
+
+        */
+
+
+
+### load\_from\_json
+- see [APIS.load\_from\_json](#APIS) for format-detail
+
+
+
+PERFORMANCE TEST
+================
 
 
 
