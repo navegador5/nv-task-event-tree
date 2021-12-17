@@ -303,7 +303,10 @@ example
          //USE tsk.hard_reset()      
          //----
          //hard_reset  will respawn many nodes, do NOT use it
-         //   coz in JS layer ,you CANT real pause a executing task (such as http)
+         //   coz in JS layer ,you CANT always real pause a executing task,
+         //   such as setTimeout USING clearTimeout
+         //           fetch      USING AbortController
+         //   but NOT all async function has FIXED cancel method  
          //   so  we must replace/respawn the task-node to avoid pollution
 
 
@@ -374,15 +377,20 @@ example
         //我们等待足够长时间,能够看到下面的LOG(虽然[tsk0011]已经paused了) 
              !!!【tsk0011 succ at 2021-12-16T11:08:16.157Z】!!!
         //but just IGNORE it, coz its from the executor-frame-on-old-task-node   
-        //since you can NOT real pause most function in JS layer(such as http request)
+        //since you can NOT  always real pause most function in JS layer(
+        //         such as fetch USING AbortController;
+        //         setTimeout USING clearTimeout;
+        //         but NOT all async API provide  cancel/abort/pause method  
+        //)
         //so nv-task-event-tree USE a trick: it replace/respawn  the old-task-node with a-new-one 
         //on the same place in task-tree
         //但是不用担心，忽略它好了
         //它其实是从 旧的[tsk0011] 上的executor-frame来的
-        //因为在JS层,多大多数函数来说,并不能真正的暂停,例如 http request
+        //因为在JS层,多大多数函数来说,并不能真正的暂停,即使提供了类似 cancel/abort/pause功能的
+        //    接口也不一致 : setTimeout,AbortController.....
         //所以nv-task-event-tree用了一个技巧: replace/respawn  旧的[tsk0011] 
         //此时虽然节点上的属性 executor conder state 与 旧的[tsk0011] 完全一样,但是是一个新节点
-        
+        //    旧的[tsk0011] 上的executor虽然还在执行,但是其结果不会污染 task-node 
         > tsk.show()
 
 ![mixed-blue-print-state5](https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/mixed-blue-print/5.png)
