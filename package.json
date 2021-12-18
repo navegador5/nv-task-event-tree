@@ -1,13 +1,21 @@
 {
   "name": "nv-task-event-tree",
   "version": "1.0.0",
-  "description": "",
+  "description": "simple bottom-to-up event-tree with pause/continue support",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
+  "keywords":[
+      "event-tree",
+      "event","tree",
+      "sequencial","serial","parallel",
+      "recover","pause","continue",
+      "reset",
+      "IF","ELIF","ELSE","WHILE"
+  ],
   "dependencies": {
     "nv-data-tree-csp-jconvert": "^1.0.4",
     "nv-data-tree-csp-node": "^1.0.22",
