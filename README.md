@@ -1375,6 +1375,18 @@ PERFORMANCE TEST
             big_task_tree.soft_reset()
 
 
+IN BROWSER
+==========
+
+        <html>
+           <head>
+               <script src="https://github.com/navegador5/nv-task-event-tree/blob/master/RESOURCES/evt.min.js"> </script>
+           </head>
+        </html>
+
+        const evt = nvhtml.evt;
+
+
 
 APIS
 ====
