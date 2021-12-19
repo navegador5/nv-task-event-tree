@@ -1384,7 +1384,35 @@ IN BROWSER
            </head>
         </html>
 
-        const evt = nvhtml.evt;
+        const evt = nvhtml.evt;          //==================>
+
+
+        //BROWSER VERSION add two more FEATURE for future using(
+        //         one for CSS ,the other for kvtree
+        //), so its pkg is  BIG
+
+        SELECT-CFG:
+                var J = [
+                     'color', {type:'Multi',as:'ary'},[
+                          'blue',
+                          'yellow',
+                          'green',
+                          'radio',{type:"Radio"},[
+                               "white",
+                               "black"
+                          ],
+                          'other',{type:"Setter",validate:function(clr) {return(["red","grey","purple"].includes(clr))}}
+                     ]
+                ]
+      
+              var [rt,forest] = nvhtml.select.load_from_json(J)
+              rt.val_
+              rt.color.blue.slct_self() 
+              rt.val_         
+      
+        JNODE:
+            var [rt,forest] = nvhtml.parse_from_json({a:100,b:[5,true,3,false]},forest)
+
 
 
 
