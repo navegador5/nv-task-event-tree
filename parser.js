@@ -19,9 +19,9 @@ function _fill_one_task(nd,cfg=DFLT_CFG()) {
     Object.assign(_cfg,cfg);
     let {type,enable_promise,conder,executor,args_dict} = _cfg;
     ////
-    if(type === TYPES[0]) {
+    if(type === TYPES[0] || type === TYPES.serial) {
         nd.set_as_serial();
-    } else if(type === TYPES[1]) {
+    } else if(type === TYPES[1] || type === TYPES.parallel) {
         nd.set_as_parallel();
     } else {
         throw(ERRORS.not_supported_type)
