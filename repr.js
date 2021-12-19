@@ -71,7 +71,7 @@ const STATE_CLR = {
 let paint;
 
 
-if(is_node) {
+if(is_node()) {
     paint = (s,state,with_clr=true) => {
         if(with_clr) {
             let [underscore,fg] = STATE_CLR[state];
