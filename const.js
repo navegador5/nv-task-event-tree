@@ -112,8 +112,10 @@ const DFLT_TAG_PARSER = (s)=>s.trim();
 
 
 
-const DFLT_CU_CONDER   = (rtrn_true,rtrn_false,self)=>{rtrn_true(self)}
-const DFLT_CU_EXECUTOR = (rs,rj,self)=>{rs(self)}
+const DFLT_CU_CONDER        = (rtrn_true,rtrn_false,self)=>{rtrn_true(self)}
+const DFLT_CU_EXECUTOR      = (rs,rj,self)=>{rs(self)}
+
+
 
 module.exports = {
     sym_debug,

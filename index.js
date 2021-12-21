@@ -6,7 +6,7 @@ const {
 } = require("./parser");
 
 const wrap   = require("./wrap");
-
+const oper   = require("./oper");
 const Task   = require("./task");
 
 globalThis[consts.sym_debug] = false;
@@ -29,6 +29,8 @@ module.exports = {
     WHILE:ctrl.WHILE,
     ////
     wrap,
+    ////
+    oper,
     ////
     Task
 }
