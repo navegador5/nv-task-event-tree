@@ -1,6 +1,6 @@
 {
   "name": "nv-task-event-tree",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "simple bottom-to-up event-tree with pause/continue support",
   "main": "index.js",
   "scripts": {
