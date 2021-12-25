@@ -161,4 +161,7 @@ add_ksyms_to_exports(
 );
 
 
+//for-aggregating-promise-only
+
+module.exports.sym_open_parent = Symbol("open_parent");
 

@@ -7,7 +7,12 @@ const {
 
 const wrap   = require("./wrap");
 const oper   = require("./oper");
-const Task   = require("./task");
+
+const State           = require("./state");
+const Completion      = require("./completion");
+const Task            = require("./task");
+
+
 
 globalThis[consts.sym_debug] = false;
 
@@ -32,5 +37,8 @@ module.exports = {
     ////
     oper,
     ////
-    Task
+    consts,
+    State,
+    Completion,
+    Task,
 }
