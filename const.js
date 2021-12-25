@@ -161,7 +161,10 @@ add_ksyms_to_exports(
 );
 
 
-//for-aggregating-promise-only
-
+//for-aggregating-promise-only future-using
 module.exports.sym_open_parent = Symbol("open_parent");
+//for-manual-mode-only  future-using
+module.exports.sym_manual      = Symbol("manual");
+
+
 
